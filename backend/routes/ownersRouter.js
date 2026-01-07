@@ -91,13 +91,13 @@ router.get("/debug-orders", async function (req, res) {
 router.get("/test-create-order", async function (req, res) {
     try {
         const mongoose = require("mongoose");
-        
+
         // Find first user
         const user = await userModel.findOne();
         if (!user) {
             return res.json({ error: "No users found in database" });
         }
-        
+
         // Create test order
         const testOrder = await orderModel.create({
             user: user._id,
@@ -125,7 +125,7 @@ router.get("/test-create-order", async function (req, res) {
             paymentStatus: 'pending',
             orderStatus: 'confirmed'
         });
-        
+
         res.json({
             success: true,
             message: "Test order created!",
@@ -137,9 +137,9 @@ router.get("/test-create-order", async function (req, res) {
             dbState: mongoose.connection.readyState
         });
     } catch (err) {
-        res.status(500).json({ 
+        res.status(500).json({
             success: false,
-            error: err.message, 
+            error: err.message,
             stack: err.stack,
             name: err.name
         });

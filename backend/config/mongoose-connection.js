@@ -4,8 +4,15 @@ const dbgr = require("debug")("development:mongoose");
 
 const connectDB = async () => {
     try {
-        const baseUri = config.get("MONGODB_URI").replace(/\/+$/, ''); // Remove trailing slashes
-        const conn = await mongoose.connect(`${baseUri}/scatch`, {
+        // Try environment variable first, then config
+        let baseUri = process.env.MONGODB_URI || config.get("MONGODB_URI");
+        baseUri = baseUri.replace(/\/+$/, ''); // Remove trailing slashes
+
+        const fullUri = `${baseUri}/scatch`;
+        console.log("Connecting to MongoDB...");
+        console.log("URI starts with:", baseUri.substring(0, 20) + "...");
+
+        const conn = await mongoose.connect(fullUri, {
             serverSelectionTimeoutMS: 10000,
             socketTimeoutMS: 45000,
         });
@@ -15,7 +22,9 @@ const connectDB = async () => {
     } catch (err) {
         dbgr(err);
         console.error("MongoDB connection error:", err.message);
-        process.exit(1);
+        console.error("Full error:", err);
+        // Don't exit, let the error propagate
+        throw err;
     }
 };
 
