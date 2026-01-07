@@ -1,33 +1,8 @@
 {
-  "buildCommand": "npm run build",
-  "outputDirectory": "public",
   "rewrites": [
     {
-      "source": "/api/:path*",
-      "destination": "https://scatch-backend-vdrh.onrender.com/api/:path*"
-    },
-    {
-      "source": "/owners/:path*",
-      "destination": "https://scatch-backend-vdrh.onrender.com/owners/:path*"
-    },
-    {
-      "source": "/users/:path*",
-      "destination": "https://scatch-backend-vdrh.onrender.com/users/:path*"
-    },
-    {
-      "source": "/products/:path*",
-      "destination": "https://scatch-backend-vdrh.onrender.com/products/:path*"
-    }
-  ],
-  "headers": [
-    {
       "source": "/(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=3600, s-maxage=3600"
-        }
-      ]
+      "destination": "https://scatch-backend-vdrh.onrender.com/$1"
     }
   ]
 }
