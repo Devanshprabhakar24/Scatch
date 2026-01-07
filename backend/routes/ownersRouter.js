@@ -148,12 +148,23 @@ router.get("/orders", isOwnerLoggedIn, async function (req, res) {
         console.log("Fetching all orders for admin...");
         let orders = await orderModel.find()
             .populate("user", "fullname email")
-            .sort({ createdAt: -1 });
-        console.log("Orders found:", orders.length);
-        res.render("admin-orders", { orders });
+            .sort({ createdAt: -1 })
+            .lean();
+        console.log("Orders found:", orders ? orders.length : 0);
+        res.render("admin-orders", { orders: orders || [] });
     } catch (err) {
         console.error("Admin orders fetch error:", err);
         res.render("admin-orders", { orders: [] });
+    }
+});
+
+// API endpoint to check orders (for debugging)
+router.get("/api/orders", isOwnerLoggedIn, async function (req, res) {
+    try {
+        let orders = await orderModel.find().lean();
+        res.json({ success: true, count: orders.length, orders });
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
     }
 });
 

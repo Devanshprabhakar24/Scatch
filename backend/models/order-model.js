@@ -62,7 +62,8 @@ const orderSchema = mongoose.Schema({
     },
     orderId: {
         type: String,
-        unique: true
+        unique: true,
+        sparse: true
     },
     createdAt: {
         type: Date,
@@ -77,8 +78,9 @@ const orderSchema = mongoose.Schema({
 // Generate unique order ID before saving
 orderSchema.pre('save', function (next) {
     if (!this.orderId) {
-        this.orderId = 'ORD' + Date.now() + Math.random().toString(36).substr(2, 5).toUpperCase();
+        this.orderId = 'ORD' + Date.now() + Math.random().toString(36).substring(2, 7).toUpperCase();
     }
+    this.updatedAt = Date.now();
     next();
 });
 

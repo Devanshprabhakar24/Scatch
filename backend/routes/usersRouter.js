@@ -208,8 +208,11 @@ router.post("/place-order", isLoggedIn, async function (req, res) {
 
         console.log("Creating order with finalAmount:", finalAmount);
 
-        // Create the order using new + save to ensure pre-save hook runs
-        const order = new orderModel({
+        // Generate order ID
+        const orderId = 'ORD' + Date.now() + Math.random().toString(36).substring(2, 7).toUpperCase();
+
+        // Create the order directly with create method
+        const order = await orderModel.create({
             user: user._id,
             products: orderProducts,
             totalAmount: totalPrice,
@@ -217,21 +220,21 @@ router.post("/place-order", isLoggedIn, async function (req, res) {
             platformFee: 20,
             shippingFee: 0,
             finalAmount: finalAmount,
+            orderId: orderId,
             shippingAddress: {
-                fullname: req.body.fullname || user.fullname,
-                phone: req.body.phone || user.contact,
-                address: req.body.address,
-                city: req.body.city,
-                state: req.body.state,
-                pincode: req.body.pincode
+                fullname: req.body.fullname || user.fullname || 'Customer',
+                phone: req.body.phone || (user.contact ? String(user.contact) : ''),
+                address: req.body.address || '',
+                city: req.body.city || '',
+                state: req.body.state || '',
+                pincode: req.body.pincode || ''
             },
             paymentMethod: req.body.paymentMethod || 'cod',
             paymentStatus: 'pending',
             orderStatus: 'confirmed'
         });
 
-        await order.save();
-        console.log("Order saved with ID:", order._id, "OrderId:", order.orderId);
+        console.log("Order created with ID:", order._id, "OrderId:", order.orderId);
 
         // Add order to user's orders array
         if (!user.orders) {
