@@ -5,7 +5,8 @@
   "main": "index.html",
   "scripts": {
     "dev": "echo 'Frontend development server'",
-    "build": "echo 'Build frontend assets'"
+    "build": "npm run build:static",
+    "build:static": "echo 'Frontend is static EJS views served from public/'"
   },
   "keywords": [],
   "author": "",

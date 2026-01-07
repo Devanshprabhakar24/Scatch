@@ -1,0 +1,37 @@
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": "public",
+  "framework": "static",
+  "env": {
+    "BACKEND_URL": "@backend_url"
+  },
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "${BACKEND_URL}/api/:path*"
+    },
+    {
+      "source": "/owners/:path*",
+      "destination": "${BACKEND_URL}/owners/:path*"
+    },
+    {
+      "source": "/users/:path*",
+      "destination": "${BACKEND_URL}/users/:path*"
+    },
+    {
+      "source": "/products/:path*",
+      "destination": "${BACKEND_URL}/products/:path*"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600, s-maxage=3600"
+        }
+      ]
+    }
+  ]
+}
