@@ -87,6 +87,46 @@ router.get("/debug-orders", async function (req, res) {
     }
 });
 
+// DEBUG: Check indexes on orders collection
+router.get("/check-indexes", async function (req, res) {
+    try {
+        const mongoose = require("mongoose");
+        const db = mongoose.connection.db;
+
+        // Check if collection exists
+        const collections = await db.listCollections({ name: 'orders' }).toArray();
+        if (collections.length === 0) {
+            return res.json({ message: "Orders collection does not exist yet", indexes: [] });
+        }
+
+        const indexes = await db.collection('orders').indexes();
+        res.json({
+            collectionExists: true,
+            indexes: indexes,
+            dbState: mongoose.connection.readyState
+        });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// DEBUG: Drop orderId index manually
+router.get("/drop-orderid-index", async function (req, res) {
+    try {
+        const mongoose = require("mongoose");
+        const db = mongoose.connection.db;
+
+        try {
+            await db.collection('orders').dropIndex('orderId_1');
+            res.json({ success: true, message: "Dropped orderId_1 index" });
+        } catch (e) {
+            res.json({ success: false, message: e.message });
+        }
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // DEBUG: Create test order to verify database works
 router.get("/test-create-order", async function (req, res) {
     try {
@@ -143,7 +183,8 @@ router.get("/test-create-order", async function (req, res) {
             success: false,
             error: err.message,
             stack: err.stack,
-            name: err.name
+            name: err.name,
+            code: err.code
         });
     }
 });
