@@ -112,20 +112,17 @@ router.get("/checkout", isLoggedIn, async function (req, res) {
 router.post("/place-order", isLoggedIn, async function (req, res) {
     try {
         if (!req.user || !req.user.email) {
-            req.flash("error", "Please login to place an order");
-            return res.redirect("/");
+            return res.redirect("/?error=Please login to place an order");
         }
 
         let user = await userModel.findOne({ email: req.user.email });
 
         if (!user) {
-            req.flash("error", "User not found");
-            return res.redirect("/");
+            return res.redirect("/?error=User not found");
         }
 
         if (!user.cart || user.cart.length === 0) {
-            req.flash("error", "Your cart is empty");
-            return res.redirect("/users/cart");
+            return res.redirect("/users/cart?error=Your cart is empty");
         }
 
         // Fetch products from cart
@@ -151,8 +148,8 @@ router.post("/place-order", isLoggedIn, async function (req, res) {
             bgcolor: product.bgcolor
         }));
 
-        // Create the order
-        const order = await orderModel.create({
+        // Create the order using new + save to ensure pre-save hook runs
+        const order = new orderModel({
             user: user._id,
             products: orderProducts,
             totalAmount: totalPrice,
@@ -172,6 +169,7 @@ router.post("/place-order", isLoggedIn, async function (req, res) {
             paymentStatus: 'pending',
             orderStatus: 'confirmed'
         });
+        await order.save();
 
         // Add order to user's orders array
         user.orders.push(order._id);
@@ -180,10 +178,24 @@ router.post("/place-order", isLoggedIn, async function (req, res) {
         user.cart = [];
         await user.save();
 
-        res.render("order-success", { order });
+        // Redirect to order success page with order ID
+        res.redirect("/users/order-success/" + order._id);
     } catch (err) {
         console.error(err);
-        res.send(err.message);
+        res.redirect("/users/cart?error=" + encodeURIComponent(err.message));
+    }
+});
+
+// Order success page
+router.get("/order-success/:orderId", isLoggedIn, async function (req, res) {
+    try {
+        let order = await orderModel.findById(req.params.orderId);
+        if (!order) {
+            return res.redirect("/users/orders?error=Order not found");
+        }
+        res.render("order-success", { order });
+    } catch (err) {
+        res.redirect("/users/orders?error=" + encodeURIComponent(err.message));
     }
 });
 

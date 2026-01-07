@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scatch | Admin Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'space': ['Space Grotesk', 'sans-serif'],
+                        'inter': ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        'dark': '#0a0a0a',
+                        'dark-card': '#141414',
+                        'dark-border': '#262626',
+                        'accent': '#6366f1',
+                        'accent-light': '#818cf8',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: #6366f1 #0a0a0a;
+        }
+        *::-webkit-scrollbar { width: 8px; }
+        *::-webkit-scrollbar-track { background: #0a0a0a; }
+        *::-webkit-scrollbar-thumb { background: #6366f1; border-radius: 4px; }
+        
+        .glass {
+            background: rgba(20, 20, 20, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .gradient-text {
+            background: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .magnetic-btn {
+            transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        
+        .magnetic-btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .card-hover {
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        }
+        
+        .animate-float {
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+    </style>
+</head>
+
+<body class="font-inter bg-dark text-white min-h-screen">
+    <!-- Animated Background -->
+    <div class="fixed inset-0 overflow-hidden pointer-events-none z-0">
+        <div class="absolute top-1/4 -left-20 w-72 h-72 bg-purple-500/20 rounded-full blur-[100px] animate-float"></div>
+        <div class="absolute bottom-1/4 -right-20 w-96 h-96 bg-indigo-500/20 rounded-full blur-[120px] animate-float" style="animation-delay: -3s;"></div>
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-pink-500/10 rounded-full blur-[150px]"></div>
+    </div>
+
+    <!-- Admin Navigation -->
+    <nav class="fixed top-0 left-0 right-0 z-50 px-6 py-4">
+        <div class="max-w-7xl mx-auto">
+            <div class="glass rounded-2xl px-6 py-4 flex justify-between items-center">
+                <a href="/owners/admin" class="text-2xl font-space font-bold gradient-text tracking-tight">Scatch Admin</a>
+                <div class="hidden md:flex gap-6 items-center">
+                    <a href="/owners/admin" class="nav-link text-gray-300 hover:text-white transition-colors font-medium flex items-center gap-2">
+                        <i class="ri-shopping-bag-line"></i> My Products
+                    </a>
+                    <a href="/owners/users" class="nav-link text-gray-300 hover:text-white transition-colors font-medium flex items-center gap-2">
+                        <i class="ri-user-line"></i> All Users
+                    </a>
+                    <a href="/owners/orders" class="nav-link text-gray-300 hover:text-white transition-colors font-medium flex items-center gap-2">
+                        <i class="ri-file-list-3-line"></i> All Orders
+                    </a>
+                </div>
+                <div class="flex gap-4 items-center">
+                    <!-- Create Product -->
+                    <a href="/owners/product/create" class="magnetic-btn px-4 py-2 rounded-xl bg-gradient-to-r from-accent to-purple-500 text-white font-medium text-sm hover:shadow-lg hover:shadow-accent/25 transition-all duration-300 flex items-center gap-2">
+                        <i class="ri-add-line"></i>
+                        <span class="hidden sm:inline">Add Product</span>
+                    </a>
+                    <!-- Admin Profile Dropdown -->
+                    <div class="relative group">
+                        <button class="w-10 h-10 rounded-full bg-gradient-to-br from-accent to-purple-500 flex items-center justify-center font-bold text-sm">
+                            <i class="ri-admin-line"></i>
+                        </button>
+                        <div class="absolute right-0 top-full mt-2 w-48 glass rounded-xl p-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300">
+                            <a href="/owners/admin" class="flex items-center gap-2 px-4 py-2.5 rounded-lg hover:bg-dark-card transition-all text-sm">
+                                <i class="ri-dashboard-line text-accent"></i> Dashboard
+                            </a>
+                            <a href="/owners/users" class="flex items-center gap-2 px-4 py-2.5 rounded-lg hover:bg-dark-card transition-all text-sm">
+                                <i class="ri-group-line text-accent"></i> All Users
+                            </a>
+                            <a href="/owners/orders" class="flex items-center gap-2 px-4 py-2.5 rounded-lg hover:bg-dark-card transition-all text-sm">
+                                <i class="ri-file-list-3-line text-accent"></i> All Orders
+                            </a>
+                            <div class="border-t border-dark-border my-2"></div>
+                            <a href="/owners/logout" class="flex items-center gap-2 px-4 py-2.5 rounded-lg hover:bg-red-500/10 transition-all text-sm text-red-400">
+                                <i class="ri-logout-box-line"></i> Logout
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>

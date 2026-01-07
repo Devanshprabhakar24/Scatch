@@ -29,7 +29,7 @@
                     <div class="flex items-center justify-between mb-4 pb-4 border-b border-dark-border">
                         <div>
                             <p class="text-gray-500 text-sm">Order ID</p>
-                            <p class="font-mono text-lg font-semibold text-accent"><%= order.orderId %></p>
+                            <p class="font-mono text-lg font-semibold text-accent"><%= order.orderId || order._id %></p>
                         </div>
                         <div class="text-right">
                             <p class="text-gray-500 text-sm">Order Date</p>

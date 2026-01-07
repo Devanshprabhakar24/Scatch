@@ -1,0 +1,142 @@
+<%- include('./partials/admin-header') %>
+
+    <!-- All Orders Section -->
+    <div class="relative z-10 min-h-screen pt-28 pb-12 px-6">
+        <div class="max-w-7xl mx-auto">
+            <!-- Page Header -->
+            <div class="mb-10 hero-content">
+                <h1 class="text-4xl md:text-5xl font-space font-bold mb-4">
+                    All <span class="gradient-text">Orders</span>
+                </h1>
+                <p class="text-gray-400">Manage customer orders</p>
+            </div>
+
+            <!-- Orders Stats -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div class="glass rounded-2xl p-6">
+                    <div class="flex items-center gap-4">
+                        <div class="w-14 h-14 rounded-2xl bg-accent/20 flex items-center justify-center">
+                            <i class="ri-file-list-3-line text-2xl text-accent"></i>
+                        </div>
+                        <div>
+                            <p class="text-gray-400 text-sm">Total Orders</p>
+                            <p class="text-3xl font-bold"><%= orders.length %></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="glass rounded-2xl p-6">
+                    <div class="flex items-center gap-4">
+                        <div class="w-14 h-14 rounded-2xl bg-yellow-500/20 flex items-center justify-center">
+                            <i class="ri-time-line text-2xl text-yellow-400"></i>
+                        </div>
+                        <div>
+                            <p class="text-gray-400 text-sm">Pending</p>
+                            <p class="text-3xl font-bold"><%= orders.filter(o => o.orderStatus === 'pending' || o.orderStatus === 'confirmed').length %></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="glass rounded-2xl p-6">
+                    <div class="flex items-center gap-4">
+                        <div class="w-14 h-14 rounded-2xl bg-blue-500/20 flex items-center justify-center">
+                            <i class="ri-truck-line text-2xl text-blue-400"></i>
+                        </div>
+                        <div>
+                            <p class="text-gray-400 text-sm">Shipped</p>
+                            <p class="text-3xl font-bold"><%= orders.filter(o => o.orderStatus === 'shipped').length %></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="glass rounded-2xl p-6">
+                    <div class="flex items-center gap-4">
+                        <div class="w-14 h-14 rounded-2xl bg-green-500/20 flex items-center justify-center">
+                            <i class="ri-checkbox-circle-line text-2xl text-green-400"></i>
+                        </div>
+                        <div>
+                            <p class="text-gray-400 text-sm">Delivered</p>
+                            <p class="text-3xl font-bold"><%= orders.filter(o => o.orderStatus === 'delivered').length %></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Orders Table -->
+            <div class="glass rounded-2xl overflow-hidden">
+                <div class="p-6 border-b border-dark-border">
+                    <h3 class="text-xl font-semibold flex items-center gap-2">
+                        <i class="ri-shopping-bag-3-line text-accent"></i>
+                        Recent Orders
+                    </h3>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-dark-card">
+                            <tr>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-400">Order ID</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-400">Customer</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-400">Items</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-400">Amount</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-400">Status</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-400">Date</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-400">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-dark-border">
+                            <% if(orders && orders.length > 0) { %>
+                            <% orders.forEach(function(order) { %>
+                            <tr class="hover:bg-dark-card/50 transition-colors">
+                                <td class="px-6 py-4">
+                                    <span class="font-mono text-accent"><%= order.orderId || order._id.toString().slice(-8).toUpperCase() %></span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div>
+                                        <p class="font-medium"><%= order.shippingAddress.fullname %></p>
+                                        <p class="text-sm text-gray-500"><%= order.shippingAddress.phone %></p>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="px-3 py-1 rounded-full bg-accent/20 text-accent text-sm">
+                                        <%= order.products.length %> items
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 font-semibold">₹<%= order.finalAmount %></td>
+                                <td class="px-6 py-4">
+                                    <% 
+                                    let statusColor = 'gray';
+                                    if(order.orderStatus === 'confirmed') statusColor = 'yellow';
+                                    if(order.orderStatus === 'processing') statusColor = 'blue';
+                                    if(order.orderStatus === 'shipped') statusColor = 'purple';
+                                    if(order.orderStatus === 'delivered') statusColor = 'green';
+                                    if(order.orderStatus === 'cancelled') statusColor = 'red';
+                                    %>
+                                    <span class="px-3 py-1 rounded-full bg-<%= statusColor %>-500/20 text-<%= statusColor %>-400 text-sm capitalize">
+                                        <%= order.orderStatus %>
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 text-gray-400 text-sm">
+                                    <%= new Date(order.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) %>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-2">
+                                        <a href="/owners/order/<%= order._id %>" class="text-accent hover:text-accent-light transition-colors" title="View Order">
+                                            <i class="ri-eye-line text-lg"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            <% }); %>
+                            <% } else { %>
+                            <tr>
+                                <td colspan="7" class="px-6 py-12 text-center text-gray-500">
+                                    <i class="ri-shopping-bag-line text-4xl mb-2 block"></i>
+                                    No orders yet
+                                </td>
+                            </tr>
+                            <% } %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<%- include('./partials/footer') %>

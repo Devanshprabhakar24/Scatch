@@ -1,0 +1,115 @@
+<%- include('./partials/admin-header') %>
+
+    <!-- All Users Section -->
+    <div class="relative z-10 min-h-screen pt-28 pb-12 px-6">
+        <div class="max-w-7xl mx-auto">
+            <!-- Page Header -->
+            <div class="mb-10 hero-content">
+                <h1 class="text-4xl md:text-5xl font-space font-bold mb-4">
+                    All <span class="gradient-text">Users</span>
+                </h1>
+                <p class="text-gray-400">Manage registered users</p>
+            </div>
+
+            <!-- Users Stats -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="glass rounded-2xl p-6">
+                    <div class="flex items-center gap-4">
+                        <div class="w-14 h-14 rounded-2xl bg-accent/20 flex items-center justify-center">
+                            <i class="ri-group-line text-2xl text-accent"></i>
+                        </div>
+                        <div>
+                            <p class="text-gray-400 text-sm">Total Users</p>
+                            <p class="text-3xl font-bold"><%= users.length %></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="glass rounded-2xl p-6">
+                    <div class="flex items-center gap-4">
+                        <div class="w-14 h-14 rounded-2xl bg-green-500/20 flex items-center justify-center">
+                            <i class="ri-shopping-cart-line text-2xl text-green-400"></i>
+                        </div>
+                        <div>
+                            <p class="text-gray-400 text-sm">Users with Orders</p>
+                            <p class="text-3xl font-bold"><%= users.filter(u => u.orders && u.orders.length > 0).length %></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="glass rounded-2xl p-6">
+                    <div class="flex items-center gap-4">
+                        <div class="w-14 h-14 rounded-2xl bg-pink-500/20 flex items-center justify-center">
+                            <i class="ri-shopping-bag-line text-2xl text-pink-400"></i>
+                        </div>
+                        <div>
+                            <p class="text-gray-400 text-sm">Active Carts</p>
+                            <p class="text-3xl font-bold"><%= users.filter(u => u.cart && u.cart.length > 0).length %></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Users Table -->
+            <div class="glass rounded-2xl overflow-hidden">
+                <div class="p-6 border-b border-dark-border">
+                    <h3 class="text-xl font-semibold flex items-center gap-2">
+                        <i class="ri-user-line text-accent"></i>
+                        Registered Users
+                    </h3>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-dark-card">
+                            <tr>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-400">User</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-400">Email</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-400">Cart Items</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-400">Orders</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-400">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-dark-border">
+                            <% if(users && users.length > 0) { %>
+                            <% users.forEach(function(user) { %>
+                            <tr class="hover:bg-dark-card/50 transition-colors">
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-accent to-purple-500 flex items-center justify-center font-bold text-sm">
+                                            <%= user.fullname ? user.fullname.charAt(0).toUpperCase() : 'U' %>
+                                        </div>
+                                        <span class="font-medium"><%= user.fullname || 'N/A' %></span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 text-gray-400"><%= user.email %></td>
+                                <td class="px-6 py-4">
+                                    <span class="px-3 py-1 rounded-full bg-accent/20 text-accent text-sm">
+                                        <%= user.cart ? user.cart.length : 0 %> items
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="px-3 py-1 rounded-full bg-green-500/20 text-green-400 text-sm">
+                                        <%= user.orders ? user.orders.length : 0 %> orders
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <a href="/owners/user/<%= user._id %>" class="text-accent hover:text-accent-light transition-colors">
+                                        <i class="ri-eye-line text-lg"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            <% }); %>
+                            <% } else { %>
+                            <tr>
+                                <td colspan="5" class="px-6 py-12 text-center text-gray-500">
+                                    <i class="ri-user-line text-4xl mb-2 block"></i>
+                                    No users registered yet
+                                </td>
+                            </tr>
+                            <% } %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<%- include('./partials/footer') %>

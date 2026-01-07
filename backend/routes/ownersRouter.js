@@ -2,6 +2,8 @@ const express = require("express");
 const router = express.Router();
 const ownerModel = require("../models/owners-model");
 const productModel = require("../models/product-model");
+const userModel = require("../models/user-model");
+const orderModel = require("../models/order-model");
 const upload = require("../config/multer-config");
 const bcrypt = require("bcrypt");
 
@@ -81,9 +83,64 @@ if (process.env.NODE_ENV === "development") {
     });
 }
 
-router.get("/admin", isOwnerLoggedIn, function (req, res) {
-    let success = req.flash("success");
-    res.render("admin", { success });
+router.get("/admin", isOwnerLoggedIn, async function (req, res) {
+    try {
+        let products = await productModel.find();
+        let success = req.flash("success");
+        res.render("admin", { success, products });
+    } catch (err) {
+        res.render("admin", { success: "", products: [] });
+    }
+});
+
+// All Users Page
+router.get("/users", isOwnerLoggedIn, async function (req, res) {
+    try {
+        let users = await userModel.find().select("-password");
+        res.render("admin-users", { users });
+    } catch (err) {
+        res.render("admin-users", { users: [] });
+    }
+});
+
+// All Orders Page
+router.get("/orders", isOwnerLoggedIn, async function (req, res) {
+    try {
+        let orders = await orderModel.find()
+            .populate("user", "fullname email")
+            .populate("products.product", "name price image")
+            .sort({ createdAt: -1 });
+        res.render("admin-orders", { orders });
+    } catch (err) {
+        console.error(err);
+        res.render("admin-orders", { orders: [] });
+    }
+});
+
+// Single Order Detail
+router.get("/order/:id", isOwnerLoggedIn, async function (req, res) {
+    try {
+        let order = await orderModel.findById(req.params.id)
+            .populate("user", "fullname email contact")
+            .populate("products.product", "name price image");
+        if (!order) {
+            return res.redirect("/owners/orders");
+        }
+        res.render("admin-order-detail", { order });
+    } catch (err) {
+        res.redirect("/owners/orders");
+    }
+});
+
+// Update Order Status
+router.post("/order/:id/status", isOwnerLoggedIn, async function (req, res) {
+    try {
+        let { orderStatus } = req.body;
+        await orderModel.findByIdAndUpdate(req.params.id, { orderStatus, updatedAt: Date.now() });
+        res.redirect("/owners/orders");
+    } catch (err) {
+        res.redirect("/owners/orders");
+    }
 });
 
 router.get("/product/create", isOwnerLoggedIn, function (req, res) {
