@@ -111,7 +111,17 @@ router.get("/checkout", isLoggedIn, async function (req, res) {
 // Place order
 router.post("/place-order", isLoggedIn, async function (req, res) {
     try {
+        if (!req.user || !req.user.email) {
+            req.flash("error", "Please login to place an order");
+            return res.redirect("/");
+        }
+
         let user = await userModel.findOne({ email: req.user.email });
+
+        if (!user) {
+            req.flash("error", "User not found");
+            return res.redirect("/");
+        }
 
         if (!user.cart || user.cart.length === 0) {
             req.flash("error", "Your cart is empty");
