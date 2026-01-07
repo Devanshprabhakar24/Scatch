@@ -8,16 +8,21 @@ module.exports.registerUser = async function (req, res) {
     try {
         const { email, password, fullname } = req.body;
         if (!email || !password || !fullname) {
-            return res.status(400).json({ error: "email, password and fullname required" });
+            req.flash("error", "Email, password and fullname are required");
+            return res.redirect("/");
         }
         let user = await userModel.findOne({ email: email })
         if (user) {
-            return res.status(401).json({ error: "User already exists" });
+            req.flash("error", "User already exists. Please login instead.");
+            return res.redirect("/");
         }
 
         bcrypt.genSalt(10, function (err, salt) {
             bcrypt.hash(password, salt, async function (err, hash) {
-                if (err) return res.status(500).json({ error: "Failed to hash password" });
+                if (err) {
+                    req.flash("error", "Registration failed. Please try again.");
+                    return res.redirect("/");
+                }
                 else {
                     let user = await userModel.create({
                         email,
@@ -39,7 +44,8 @@ module.exports.registerUser = async function (req, res) {
         })
     } catch (err) {
         console.error(err);
-        return res.status(500).json({ error: err.message || "Server error" });
+        req.flash("error", "An error occurred. Please try again.");
+        return res.redirect("/");
     }
 }
 module.exports.loginUser = async function (req, res) {
