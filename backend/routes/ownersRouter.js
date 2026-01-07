@@ -145,13 +145,14 @@ router.get("/users", isOwnerLoggedIn, async function (req, res) {
 // All Orders Page
 router.get("/orders", isOwnerLoggedIn, async function (req, res) {
     try {
+        console.log("Fetching all orders for admin...");
         let orders = await orderModel.find()
             .populate("user", "fullname email")
-            .populate("products.product", "name price image")
             .sort({ createdAt: -1 });
+        console.log("Orders found:", orders.length);
         res.render("admin-orders", { orders });
     } catch (err) {
-        console.error(err);
+        console.error("Admin orders fetch error:", err);
         res.render("admin-orders", { orders: [] });
     }
 });

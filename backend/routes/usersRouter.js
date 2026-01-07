@@ -90,14 +90,19 @@ router.get("/cart", isLoggedIn, async function (req, res) {
 router.get("/cart/remove/:productId", isLoggedIn, async function (req, res) {
     try {
         let user = await userModel.findOne({ email: req.user.email });
-        let index = user.cart.indexOf(req.params.productId);
+        // Convert ObjectIds to strings for comparison
+        const productIdToRemove = req.params.productId;
+        const cartStrings = user.cart.map(id => id.toString());
+        const index = cartStrings.indexOf(productIdToRemove);
+
         if (index > -1) {
             user.cart.splice(index, 1);
+            await user.save();
         }
-        await user.save();
         res.redirect("/users/cart");
     } catch (err) {
-        res.send(err.message);
+        console.error("Remove from cart error:", err);
+        res.redirect("/users/cart?error=" + encodeURIComponent(err.message));
     }
 });
 
@@ -150,22 +155,36 @@ router.get("/checkout", isLoggedIn, async function (req, res) {
 // Place order
 router.post("/place-order", isLoggedIn, async function (req, res) {
     try {
+        console.log("Place order initiated for user:", req.user?.email);
+
         if (!req.user || !req.user.email) {
+            console.log("No user in request");
             return res.redirect("/?error=Please login to place an order");
         }
 
         let user = await userModel.findOne({ email: req.user.email });
 
         if (!user) {
+            console.log("User not found in database");
             return res.redirect("/?error=User not found");
         }
 
         if (!user.cart || user.cart.length === 0) {
+            console.log("Cart is empty");
             return res.redirect("/users/cart?error=Your cart is empty");
         }
 
+        console.log("Cart items:", user.cart.length);
+
         // Fetch products from cart
         let cartProducts = await productModel.find({ _id: { $in: user.cart } });
+
+        if (!cartProducts || cartProducts.length === 0) {
+            console.log("No products found for cart items");
+            return res.redirect("/users/cart?error=Products not found");
+        }
+
+        console.log("Products found:", cartProducts.length);
 
         // Calculate totals
         let totalPrice = 0;
@@ -187,6 +206,8 @@ router.post("/place-order", isLoggedIn, async function (req, res) {
             bgcolor: product.bgcolor
         }));
 
+        console.log("Creating order with finalAmount:", finalAmount);
+
         // Create the order using new + save to ensure pre-save hook runs
         const order = new orderModel({
             user: user._id,
@@ -197,8 +218,8 @@ router.post("/place-order", isLoggedIn, async function (req, res) {
             shippingFee: 0,
             finalAmount: finalAmount,
             shippingAddress: {
-                fullname: req.body.fullname,
-                phone: req.body.phone,
+                fullname: req.body.fullname || user.fullname,
+                phone: req.body.phone || user.contact,
                 address: req.body.address,
                 city: req.body.city,
                 state: req.body.state,
@@ -208,19 +229,25 @@ router.post("/place-order", isLoggedIn, async function (req, res) {
             paymentStatus: 'pending',
             orderStatus: 'confirmed'
         });
+
         await order.save();
+        console.log("Order saved with ID:", order._id, "OrderId:", order.orderId);
 
         // Add order to user's orders array
+        if (!user.orders) {
+            user.orders = [];
+        }
         user.orders.push(order._id);
 
         // Clear the cart
         user.cart = [];
         await user.save();
+        console.log("User cart cleared, redirecting to success page");
 
         // Redirect to order success page with order ID
         res.redirect("/users/order-success/" + order._id);
     } catch (err) {
-        console.error(err);
+        console.error("Place order error:", err);
         res.redirect("/users/cart?error=" + encodeURIComponent(err.message));
     }
 });
