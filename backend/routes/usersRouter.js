@@ -10,6 +10,45 @@ const {
     logout,
 } = require("../controllers/authController");
 
+// Helper function to get order timeline
+function getOrderTimeline(order) {
+    const statuses = ['pending', 'confirmed', 'processing', 'shipped', 'delivered'];
+    const timeline = [];
+
+    const statusMessages = {
+        pending: 'Order placed',
+        confirmed: 'Order confirmed',
+        processing: 'Being prepared',
+        shipped: 'On the way',
+        delivered: 'Delivered'
+    };
+
+    const statusIcons = {
+        pending: 'ri-shopping-bag-line',
+        confirmed: 'ri-checkbox-circle-fill',
+        processing: 'ri-loader-4-line',
+        shipped: 'ri-truck-line',
+        delivered: 'ri-checkbox-circle-fill'
+    };
+
+    statuses.forEach((status, index) => {
+        const isCompleted = statuses.indexOf(order.orderStatus) >= index;
+        const isCurrentStatus = order.orderStatus === status;
+
+        timeline.push({
+            status: status,
+            message: statusMessages[status],
+            icon: statusIcons[status],
+            completed: isCompleted && order.orderStatus !== 'cancelled',
+            current: isCurrentStatus && order.orderStatus !== 'cancelled',
+            cancelled: order.orderStatus === 'cancelled',
+            date: isCompleted ? order.updatedAt : null
+        });
+    });
+
+    return timeline;
+}
+
 router.get("/", function (req, res) {
     res.send("hey it's working");
 });
@@ -273,45 +312,6 @@ router.get("/orders/:orderId", isLoggedIn, async function (req, res) {
         res.send(err.message);
     }
 });
-
-// Helper function to get order timeline
-function getOrderTimeline(order) {
-    const statuses = ['pending', 'confirmed', 'processing', 'shipped', 'delivered'];
-    const timeline = [];
-
-    const statusMessages = {
-        pending: 'Order placed',
-        confirmed: 'Order confirmed',
-        processing: 'Being prepared',
-        shipped: 'On the way',
-        delivered: 'Delivered'
-    };
-
-    const statusIcons = {
-        pending: 'ri-shopping-bag-line',
-        confirmed: 'ri-checkbox-circle-fill',
-        processing: 'ri-loader-4-line',
-        shipped: 'ri-truck-line',
-        delivered: 'ri-checkbox-circle-fill'
-    };
-
-    statuses.forEach((status, index) => {
-        const isCompleted = statuses.indexOf(order.orderStatus) >= index;
-        const isCurrentStatus = order.orderStatus === status;
-
-        timeline.push({
-            status: status,
-            message: statusMessages[status],
-            icon: statusIcons[status],
-            completed: isCompleted && order.orderStatus !== 'cancelled',
-            current: isCurrentStatus && order.orderStatus !== 'cancelled',
-            cancelled: order.orderStatus === 'cancelled',
-            date: isCompleted ? order.updatedAt : null
-        });
-    });
-
-    return timeline;
-}
 
 // User wishlist
 router.get("/wishlist", isLoggedIn, async function (req, res) {
