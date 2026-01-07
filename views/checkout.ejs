@@ -1,0 +1,220 @@
+<%- include('./partials/header') %>
+
+    <!-- Checkout Section -->
+    <div class="relative z-10 min-h-screen pt-28 pb-12 px-6">
+        <div class="max-w-6xl mx-auto">
+            <!-- Breadcrumb -->
+            <nav class="mb-8 flex items-center gap-2 text-sm text-gray-500">
+                <a href="/" class="hover:text-accent transition-colors">Home</a>
+                <i class="ri-arrow-right-s-line"></i>
+                <a href="/users/cart" class="hover:text-accent transition-colors">Cart</a>
+                <i class="ri-arrow-right-s-line"></i>
+                <span class="text-white">Checkout</span>
+            </nav>
+
+            <div class="text-center mb-12 stagger-item">
+                <h1 class="text-4xl md:text-5xl font-space font-bold mb-4">
+                    <span class="gradient-text">Checkout</span>
+                </h1>
+                <p class="text-gray-400 text-lg">Complete your order</p>
+            </div>
+
+            <form action="/users/place-order" method="POST">
+                <div class="flex flex-col lg:flex-row gap-8">
+                    <!-- Shipping Details -->
+                    <div class="flex-1">
+                        <div class="glass rounded-2xl p-6 mb-6">
+                            <h3 class="text-xl font-space font-semibold mb-6 flex items-center gap-2">
+                                <i class="ri-map-pin-line text-accent"></i>
+                                Shipping Address
+                            </h3>
+                            
+                            <div class="grid md:grid-cols-2 gap-4">
+                                <div class="md:col-span-2">
+                                    <label class="block text-gray-400 text-sm mb-2">Full Name *</label>
+                                    <input type="text" name="fullname" required value="<%= user.fullname || '' %>"
+                                        class="w-full px-4 py-3 rounded-xl bg-dark-card border border-dark-border focus:border-accent focus:outline-none transition-colors text-white placeholder-gray-500"
+                                        placeholder="Enter your full name">
+                                </div>
+                                <div>
+                                    <label class="block text-gray-400 text-sm mb-2">Phone Number *</label>
+                                    <input type="tel" name="phone" required value="<%= user.contact || '' %>"
+                                        class="w-full px-4 py-3 rounded-xl bg-dark-card border border-dark-border focus:border-accent focus:outline-none transition-colors text-white placeholder-gray-500"
+                                        placeholder="Enter phone number">
+                                </div>
+                                <div>
+                                    <label class="block text-gray-400 text-sm mb-2">Email</label>
+                                    <input type="email" name="email" value="<%= user.email || '' %>" readonly
+                                        class="w-full px-4 py-3 rounded-xl bg-dark-card/50 border border-dark-border text-gray-400 cursor-not-allowed">
+                                </div>
+                                <div class="md:col-span-2">
+                                    <label class="block text-gray-400 text-sm mb-2">Address *</label>
+                                    <textarea name="address" required rows="3"
+                                        class="w-full px-4 py-3 rounded-xl bg-dark-card border border-dark-border focus:border-accent focus:outline-none transition-colors text-white placeholder-gray-500 resize-none"
+                                        placeholder="House/Flat No., Building, Street, Area"></textarea>
+                                </div>
+                                <div>
+                                    <label class="block text-gray-400 text-sm mb-2">City *</label>
+                                    <input type="text" name="city" required
+                                        class="w-full px-4 py-3 rounded-xl bg-dark-card border border-dark-border focus:border-accent focus:outline-none transition-colors text-white placeholder-gray-500"
+                                        placeholder="Enter city">
+                                </div>
+                                <div>
+                                    <label class="block text-gray-400 text-sm mb-2">State *</label>
+                                    <input type="text" name="state" required
+                                        class="w-full px-4 py-3 rounded-xl bg-dark-card border border-dark-border focus:border-accent focus:outline-none transition-colors text-white placeholder-gray-500"
+                                        placeholder="Enter state">
+                                </div>
+                                <div>
+                                    <label class="block text-gray-400 text-sm mb-2">PIN Code *</label>
+                                    <input type="text" name="pincode" required pattern="[0-9]{6}"
+                                        class="w-full px-4 py-3 rounded-xl bg-dark-card border border-dark-border focus:border-accent focus:outline-none transition-colors text-white placeholder-gray-500"
+                                        placeholder="6-digit PIN code">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Payment Method -->
+                        <div class="glass rounded-2xl p-6">
+                            <h3 class="text-xl font-space font-semibold mb-6 flex items-center gap-2">
+                                <i class="ri-bank-card-line text-accent"></i>
+                                Payment Method
+                            </h3>
+                            
+                            <div class="space-y-4">
+                                <label class="flex items-center gap-4 p-4 rounded-xl bg-dark-card border-2 border-accent cursor-pointer">
+                                    <input type="radio" name="paymentMethod" value="cod" checked
+                                        class="w-5 h-5 accent-accent">
+                                    <div class="flex items-center gap-3 flex-1">
+                                        <div class="w-12 h-12 rounded-lg bg-green-500/20 flex items-center justify-center">
+                                            <i class="ri-money-rupee-circle-line text-2xl text-green-400"></i>
+                                        </div>
+                                        <div>
+                                            <h4 class="font-medium">Cash on Delivery</h4>
+                                            <p class="text-sm text-gray-500">Pay when you receive</p>
+                                        </div>
+                                    </div>
+                                </label>
+                                
+                                <label class="flex items-center gap-4 p-4 rounded-xl bg-dark-card border border-dark-border cursor-pointer hover:border-gray-600 transition-colors opacity-60">
+                                    <input type="radio" name="paymentMethod" value="online" disabled
+                                        class="w-5 h-5 accent-accent">
+                                    <div class="flex items-center gap-3 flex-1">
+                                        <div class="w-12 h-12 rounded-lg bg-accent/20 flex items-center justify-center">
+                                            <i class="ri-bank-card-2-line text-2xl text-accent"></i>
+                                        </div>
+                                        <div>
+                                            <h4 class="font-medium">Online Payment</h4>
+                                            <p class="text-sm text-gray-500">Coming soon</p>
+                                        </div>
+                                    </div>
+                                    <span class="px-3 py-1 rounded-full bg-yellow-500/20 text-yellow-400 text-xs">Soon</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Order Summary -->
+                    <aside class="lg:w-96 flex-shrink-0">
+                        <div class="glass rounded-2xl p-6 sticky top-28">
+                            <h3 class="text-xl font-space font-semibold mb-6 flex items-center gap-2">
+                                <i class="ri-file-list-3-line text-accent"></i>
+                                Order Summary
+                            </h3>
+                            
+                            <!-- Cart Items Preview -->
+                            <div class="space-y-4 mb-6 max-h-60 overflow-y-auto custom-scrollbar">
+                                <% cart.forEach(function(item) { %>
+                                <div class="flex items-center gap-3 p-3 rounded-xl bg-dark-card">
+                                    <div class="w-16 h-16 rounded-lg flex items-center justify-center flex-shrink-0" style="background: <%= item.bgcolor %>;">
+                                        <% if(item.image) { %>
+                                        <img class="w-12 h-12 object-contain" 
+                                             src="data:image/jpeg;base64,<%= item.image.toString('base64') %>" 
+                                             alt="<%= item.name %>">
+                                        <% } %>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <h4 class="font-medium text-sm truncate"><%= item.name %></h4>
+                                        <p class="text-accent text-sm">₹<%= item.price - item.discount %></p>
+                                    </div>
+                                </div>
+                                <% }) %>
+                            </div>
+                            
+                            <div class="border-t border-dark-border pt-4 space-y-3 mb-6">
+                                <div class="flex justify-between text-gray-400">
+                                    <span>Subtotal (<%= cart.length %> items)</span>
+                                    <span class="text-white">₹<%= totalPrice %></span>
+                                </div>
+                                <div class="flex justify-between text-gray-400">
+                                    <span>Discount</span>
+                                    <span class="text-green-400">- ₹<%= totalDiscount %></span>
+                                </div>
+                                <div class="flex justify-between text-gray-400">
+                                    <span>Platform Fee</span>
+                                    <span class="text-white">₹20</span>
+                                </div>
+                                <div class="flex justify-between text-gray-400">
+                                    <span>Shipping</span>
+                                    <span class="text-green-400">FREE</span>
+                                </div>
+                            </div>
+                            
+                            <div class="border-t border-dark-border pt-4 mb-6">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-lg font-semibold">Total</span>
+                                    <span class="text-2xl font-bold gradient-text">₹<%= finalAmount %></span>
+                                </div>
+                            </div>
+                            
+                            <button type="submit" class="magnetic-btn w-full py-4 rounded-xl bg-gradient-to-r from-accent to-purple-500 text-white font-semibold text-lg hover:shadow-lg hover:shadow-accent/25 transition-all duration-300 flex items-center justify-center gap-2 animate-pulse-glow">
+                                <i class="ri-secure-payment-line"></i>
+                                Place Order • ₹<%= finalAmount %>
+                            </button>
+                            
+                            <p class="text-center text-gray-500 text-sm mt-4">
+                                By placing order, you agree to our Terms & Conditions
+                            </p>
+                        </div>
+                    </aside>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <style>
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(99, 102, 241, 0.5);
+            border-radius: 4px;
+        }
+    </style>
+
+    <script>
+        // Improve submission UX: if required fields are missing,
+        // scroll to the first invalid field so the button feels responsive
+        (function () {
+            const form = document.querySelector('form[action="/users/place-order"]');
+            if (!form) return;
+            form.addEventListener('submit', function (e) {
+                if (!form.checkValidity()) {
+                    e.preventDefault();
+                    const firstInvalid = form.querySelector(':invalid');
+                    if (firstInvalid) {
+                        firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        firstInvalid.focus({ preventScroll: true });
+                        firstInvalid.classList.add('ring-2', 'ring-red-500');
+                        setTimeout(() => firstInvalid.classList.remove('ring-2', 'ring-red-500'), 2000);
+                    }
+                }
+            });
+        })();
+    </script>
+
+<%- include('./partials/footer') %>

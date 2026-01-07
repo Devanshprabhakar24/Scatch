@@ -1,0 +1,319 @@
+<%- include('./partials/header') %>
+
+    <!-- Product Detail Section -->
+    <div class="relative z-10 min-h-screen pt-28 pb-12 px-6">
+        <div class="max-w-7xl mx-auto">
+            <!-- Breadcrumb -->
+            <nav class="mb-8 flex items-center gap-2 text-sm text-gray-500">
+                <a href="/" class="hover:text-accent transition-colors">Home</a>
+                <i class="ri-arrow-right-s-line"></i>
+                <a href="/shop" class="hover:text-accent transition-colors">Shop</a>
+                <i class="ri-arrow-right-s-line"></i>
+                <span class="text-white"><%= product.name %></span>
+            </nav>
+
+            <div class="flex flex-col lg:flex-row gap-12">
+                <!-- Product Images -->
+                <div class="lg:w-1/2">
+                    <div class="glass rounded-3xl overflow-hidden">
+                        <div class="relative h-[500px] flex items-center justify-center" style="background: <%= product.bgcolor %>;">
+                            <% if(product.discount > 0) { %>
+                            <span class="absolute top-6 left-6 px-4 py-2 rounded-full bg-gradient-to-r from-red-500 to-pink-500 text-white text-sm font-bold shadow-lg">
+                                -<%= product.discount %>% OFF
+                            </span>
+                            <% } %>
+                            <% if(product.image) { %>
+                            <img class="max-h-[400px] object-contain product-image" 
+                                 src="data:image/jpeg;base64,<%= product.image.toString('base64') %>" 
+                                 alt="<%= product.name %>">
+                            <% } %>
+                        </div>
+                    </div>
+                    <!-- Thumbnail Gallery -->
+                    <div class="flex gap-4 mt-4">
+                        <div class="w-20 h-20 rounded-xl overflow-hidden cursor-pointer border-2 border-accent" style="background: <%= product.bgcolor %>;">
+                            <% if(product.image) { %>
+                            <img class="w-full h-full object-contain p-2" 
+                                 src="data:image/jpeg;base64,<%= product.image.toString('base64') %>" 
+                                 alt="">
+                            <% } %>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Product Info -->
+                <div class="lg:w-1/2">
+                    <div class="stagger-item">
+                        <!-- Badge -->
+                        <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-500/20 text-green-400 text-sm mb-4">
+                            <i class="ri-checkbox-circle-fill"></i>
+                            In Stock
+                        </div>
+
+                        <h1 class="text-4xl md:text-5xl font-space font-bold mb-4"><%= product.name %></h1>
+                        
+                        <!-- Rating -->
+                        <div class="flex items-center gap-4 mb-6">
+                            <div class="flex items-center gap-1">
+                                <i class="ri-star-fill text-yellow-400"></i>
+                                <i class="ri-star-fill text-yellow-400"></i>
+                                <i class="ri-star-fill text-yellow-400"></i>
+                                <i class="ri-star-fill text-yellow-400"></i>
+                                <i class="ri-star-half-fill text-yellow-400"></i>
+                            </div>
+                            <span class="text-gray-400">4.5 (128 reviews)</span>
+                        </div>
+
+                        <!-- Price -->
+                        <div class="flex items-baseline gap-4 mb-8">
+                            <span class="text-4xl font-bold gradient-text">₹<%= product.price - (product.price * product.discount / 100) %></span>
+                            <% if(product.discount > 0) { %>
+                            <span class="text-xl text-gray-500 line-through">₹<%= product.price %></span>
+                            <span class="px-3 py-1 rounded-full bg-green-500/20 text-green-400 text-sm">
+                                Save ₹<%= (product.price * product.discount / 100) %>
+                            </span>
+                            <% } %>
+                        </div>
+
+                        <!-- Description -->
+                        <p class="text-gray-400 mb-8 leading-relaxed">
+                            Experience premium quality with this exceptional product. Crafted with attention to detail 
+                            and designed for those who appreciate the finer things in life. Perfect for everyday use 
+                            or special occasions.
+                        </p>
+
+                        <!-- Features -->
+                        <div class="grid grid-cols-2 gap-4 mb-8">
+                            <div class="flex items-center gap-3 glass rounded-xl p-4">
+                                <div class="w-10 h-10 rounded-lg bg-accent/20 flex items-center justify-center">
+                                    <i class="ri-truck-line text-accent"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-medium text-sm">Free Shipping</h4>
+                                    <p class="text-xs text-gray-500">On orders over ₹500</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-3 glass rounded-xl p-4">
+                                <div class="w-10 h-10 rounded-lg bg-green-500/20 flex items-center justify-center">
+                                    <i class="ri-shield-check-line text-green-400"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-medium text-sm">Warranty</h4>
+                                    <p class="text-xs text-gray-500">1 Year guarantee</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-3 glass rounded-xl p-4">
+                                <div class="w-10 h-10 rounded-lg bg-pink-500/20 flex items-center justify-center">
+                                    <i class="ri-exchange-line text-pink-400"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-medium text-sm">Easy Returns</h4>
+                                    <p class="text-xs text-gray-500">30 day return policy</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-3 glass rounded-xl p-4">
+                                <div class="w-10 h-10 rounded-lg bg-orange-500/20 flex items-center justify-center">
+                                    <i class="ri-hand-heart-line text-orange-400"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-medium text-sm">Premium Quality</h4>
+                                    <p class="text-xs text-gray-500">Handcrafted with care</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Quantity Selector -->
+                        <div class="flex items-center gap-6 mb-8">
+                            <span class="text-gray-400">Quantity:</span>
+                            <div class="flex items-center gap-3">
+                                <button class="qty-btn w-10 h-10 rounded-xl bg-dark-card border border-dark-border flex items-center justify-center hover:border-accent transition-all">
+                                    <i class="ri-subtract-line"></i>
+                                </button>
+                                <span class="w-12 text-center text-xl font-semibold qty-value">1</span>
+                                <button class="qty-btn w-10 h-10 rounded-xl bg-dark-card border border-dark-border flex items-center justify-center hover:border-accent transition-all">
+                                    <i class="ri-add-line"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="flex flex-col sm:flex-row gap-4">
+                            <a href="/users/cart/add/<%= product._id %>" class="magnetic-btn flex-1 py-4 rounded-xl bg-gradient-to-r from-accent to-purple-500 text-white font-semibold text-lg hover:shadow-lg hover:shadow-accent/25 transition-all duration-300 flex items-center justify-center gap-2">
+                                <i class="ri-shopping-bag-line"></i>
+                                Add to Cart
+                            </a>
+                            <button class="magnetic-btn flex-1 py-4 rounded-xl bg-dark-card border border-dark-border text-white font-semibold text-lg hover:border-accent transition-all duration-300 flex items-center justify-center gap-2">
+                                <i class="ri-heart-line"></i>
+                                Add to Wishlist
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Product Tabs -->
+            <div class="mt-20">
+                <div class="flex gap-8 border-b border-dark-border mb-8">
+                    <button class="tab-btn active pb-4 text-lg font-medium border-b-2 border-accent text-white" data-tab="description">Description</button>
+                    <button class="tab-btn pb-4 text-lg font-medium border-b-2 border-transparent text-gray-500 hover:text-white transition-colors" data-tab="reviews">Reviews (128)</button>
+                    <button class="tab-btn pb-4 text-lg font-medium border-b-2 border-transparent text-gray-500 hover:text-white transition-colors" data-tab="shipping">Shipping Info</button>
+                </div>
+
+                <!-- Description Tab -->
+                <div class="tab-content active" id="description">
+                    <div class="glass rounded-2xl p-8">
+                        <h3 class="text-xl font-semibold mb-4">Product Description</h3>
+                        <p class="text-gray-400 leading-relaxed mb-4">
+                            Introducing our premium collection piece - designed with meticulous attention to detail 
+                            and crafted from the finest materials. This product represents the perfect blend of 
+                            style, functionality, and durability.
+                        </p>
+                        <ul class="space-y-2 text-gray-400">
+                            <li class="flex items-center gap-2">
+                                <i class="ri-check-line text-green-400"></i>
+                                Premium quality materials
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <i class="ri-check-line text-green-400"></i>
+                                Ergonomic design for comfort
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <i class="ri-check-line text-green-400"></i>
+                                Water-resistant coating
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <i class="ri-check-line text-green-400"></i>
+                                Multiple compartments for organization
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Reviews Tab -->
+                <div class="tab-content hidden" id="reviews">
+                    <div class="glass rounded-2xl p-8">
+                        <div class="flex items-center justify-between mb-8">
+                            <h3 class="text-xl font-semibold">Customer Reviews</h3>
+                            <button class="magnetic-btn px-6 py-3 rounded-xl bg-accent text-white font-medium hover:shadow-lg hover:shadow-accent/25 transition-all">
+                                Write a Review
+                            </button>
+                        </div>
+                        <!-- Sample Reviews -->
+                        <div class="space-y-6">
+                            <div class="border-b border-dark-border pb-6">
+                                <div class="flex items-center gap-4 mb-3">
+                                    <div class="w-12 h-12 rounded-full bg-gradient-to-br from-accent to-purple-500 flex items-center justify-center font-bold">
+                                        A
+                                    </div>
+                                    <div>
+                                        <h4 class="font-medium">Aditya Sharma</h4>
+                                        <div class="flex items-center gap-2 text-sm text-gray-500">
+                                            <div class="flex text-yellow-400">
+                                                <i class="ri-star-fill"></i>
+                                                <i class="ri-star-fill"></i>
+                                                <i class="ri-star-fill"></i>
+                                                <i class="ri-star-fill"></i>
+                                                <i class="ri-star-fill"></i>
+                                            </div>
+                                            <span>• 2 weeks ago</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <p class="text-gray-400">Amazing quality! Exceeded my expectations. The material feels premium and the design is exactly as shown. Highly recommend!</p>
+                            </div>
+                            <div class="border-b border-dark-border pb-6">
+                                <div class="flex items-center gap-4 mb-3">
+                                    <div class="w-12 h-12 rounded-full bg-gradient-to-br from-pink-500 to-orange-400 flex items-center justify-center font-bold">
+                                        P
+                                    </div>
+                                    <div>
+                                        <h4 class="font-medium">Priya Patel</h4>
+                                        <div class="flex items-center gap-2 text-sm text-gray-500">
+                                            <div class="flex text-yellow-400">
+                                                <i class="ri-star-fill"></i>
+                                                <i class="ri-star-fill"></i>
+                                                <i class="ri-star-fill"></i>
+                                                <i class="ri-star-fill"></i>
+                                                <i class="ri-star-line"></i>
+                                            </div>
+                                            <span>• 1 month ago</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <p class="text-gray-400">Great product for the price. Fast delivery and excellent packaging. Would buy again!</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Shipping Tab -->
+                <div class="tab-content hidden" id="shipping">
+                    <div class="glass rounded-2xl p-8">
+                        <h3 class="text-xl font-semibold mb-4">Shipping Information</h3>
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <h4 class="font-medium mb-2 flex items-center gap-2">
+                                    <i class="ri-truck-line text-accent"></i>
+                                    Delivery Options
+                                </h4>
+                                <ul class="space-y-2 text-gray-400 text-sm">
+                                    <li>Standard Delivery: 5-7 business days</li>
+                                    <li>Express Delivery: 2-3 business days</li>
+                                    <li>Same Day Delivery: Available in select cities</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h4 class="font-medium mb-2 flex items-center gap-2">
+                                    <i class="ri-exchange-line text-pink-400"></i>
+                                    Return Policy
+                                </h4>
+                                <ul class="space-y-2 text-gray-400 text-sm">
+                                    <li>30-day easy returns</li>
+                                    <li>Free returns on all orders</li>
+                                    <li>Full refund or exchange available</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        // GSAP Animations
+        gsap.from('.product-image', {
+            scale: 0.8,
+            opacity: 0,
+            duration: 1,
+            ease: 'power3.out'
+        });
+
+        // Tab switching
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tab-btn').forEach(b => {
+                    b.classList.remove('active', 'border-accent', 'text-white');
+                    b.classList.add('border-transparent', 'text-gray-500');
+                });
+                btn.classList.add('active', 'border-accent', 'text-white');
+                btn.classList.remove('border-transparent', 'text-gray-500');
+                
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+                document.getElementById(btn.dataset.tab).classList.remove('hidden');
+            });
+        });
+
+        // Quantity buttons
+        let qty = 1;
+        document.querySelectorAll('.qty-btn').forEach((btn, i) => {
+            btn.addEventListener('click', () => {
+                if (i === 0 && qty > 1) qty--;
+                if (i === 1) qty++;
+                document.querySelector('.qty-value').textContent = qty;
+            });
+        });
+    </script>
+
+<%- include('./partials/footer') %>

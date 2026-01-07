@@ -1,0 +1,333 @@
+<%- include('./partials/header') %>
+
+    <!-- Order Success Section -->
+    <div class="relative z-10 min-h-screen pt-28 pb-12 px-6 flex items-center justify-center">
+        <div class="max-w-2xl mx-auto text-center">
+            <!-- Success Animation Container -->
+            <div class="success-container mb-8">
+                <div class="success-checkmark">
+                    <div class="check-icon">
+                        <span class="icon-line line-tip"></span>
+                        <span class="icon-line line-long"></span>
+                        <div class="icon-circle"></div>
+                        <div class="icon-fix"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass rounded-3xl p-8 md:p-12 stagger-item">
+                <h1 class="text-4xl md:text-5xl font-space font-bold mb-4">
+                    <span class="gradient-text">Order Placed!</span>
+                </h1>
+                
+                <p class="text-gray-400 text-lg mb-8">
+                    Thank you for your purchase. Your order has been confirmed and will be shipped soon.
+                </p>
+
+                <!-- Order Details Card -->
+                <div class="bg-dark-card rounded-2xl p-6 mb-8 text-left">
+                    <div class="flex items-center justify-between mb-4 pb-4 border-b border-dark-border">
+                        <div>
+                            <p class="text-gray-500 text-sm">Order ID</p>
+                            <p class="font-mono text-lg font-semibold text-accent"><%= order.orderId %></p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-gray-500 text-sm">Order Date</p>
+                            <p class="font-medium"><%= new Date(order.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) %></p>
+                        </div>
+                    </div>
+
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div>
+                            <h4 class="text-gray-500 text-sm mb-2 flex items-center gap-2">
+                                <i class="ri-map-pin-line"></i>
+                                Delivery Address
+                            </h4>
+                            <p class="text-white font-medium"><%= order.shippingAddress.fullname %></p>
+                            <p class="text-gray-400 text-sm">
+                                <%= order.shippingAddress.address %><br>
+                                <%= order.shippingAddress.city %>, <%= order.shippingAddress.state %> - <%= order.shippingAddress.pincode %><br>
+                                Phone: <%= order.shippingAddress.phone %>
+                            </p>
+                        </div>
+                        <div>
+                            <h4 class="text-gray-500 text-sm mb-2 flex items-center gap-2">
+                                <i class="ri-bank-card-line"></i>
+                                Payment Details
+                            </h4>
+                            <p class="text-white font-medium">
+                                <%= order.paymentMethod === 'cod' ? 'Cash on Delivery' : 'Online Payment' %>
+                            </p>
+                            <p class="text-gray-400 text-sm">
+                                Status: <span class="text-yellow-400 capitalize"><%= order.paymentStatus %></span>
+                            </p>
+                            <p class="text-2xl font-bold gradient-text mt-2">₹<%= order.finalAmount %></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Order Items -->
+                <div class="bg-dark-card rounded-2xl p-6 mb-8 text-left">
+                    <h4 class="text-gray-500 text-sm mb-4 flex items-center gap-2">
+                        <i class="ri-shopping-bag-line"></i>
+                        Order Items (<%= order.products.length %>)
+                    </h4>
+                    <div class="space-y-4">
+                        <% order.products.forEach(function(item) { %>
+                        <div class="flex items-center gap-4 p-3 rounded-xl bg-dark-surface">
+                            <div class="w-16 h-16 rounded-lg flex items-center justify-center flex-shrink-0" style="background: <%= item.bgcolor || '#1a1a1a' %>;">
+                                <% if(item.image) { %>
+                                <img class="w-12 h-12 object-contain" 
+                                     src="data:image/jpeg;base64,<%= item.image.toString('base64') %>" 
+                                     alt="<%= item.name %>">
+                                <% } else { %>
+                                <i class="ri-shopping-bag-line text-2xl text-gray-600"></i>
+                                <% } %>
+                            </div>
+                            <div class="flex-1">
+                                <h4 class="font-medium"><%= item.name %></h4>
+                                <p class="text-accent">₹<%= item.price - (item.discount || 0) %></p>
+                            </div>
+                        </div>
+                        <% }) %>
+                    </div>
+                </div>
+
+                <!-- Order Timeline -->
+                <div class="bg-dark-card rounded-2xl p-6 mb-8 text-left">
+                    <h4 class="text-gray-500 text-sm mb-4 flex items-center gap-2">
+                        <i class="ri-time-line"></i>
+                        Estimated Delivery
+                    </h4>
+                    <div class="flex items-center gap-4">
+                        <div class="flex-1 h-2 bg-dark-surface rounded-full overflow-hidden">
+                            <div class="h-full w-1/4 bg-gradient-to-r from-accent to-purple-500 rounded-full"></div>
+                        </div>
+                    </div>
+                    <div class="flex justify-between mt-3 text-sm">
+                        <div class="text-center">
+                            <div class="w-8 h-8 rounded-full bg-accent flex items-center justify-center mx-auto mb-1">
+                                <i class="ri-check-line text-white"></i>
+                            </div>
+                            <span class="text-accent">Confirmed</span>
+                        </div>
+                        <div class="text-center">
+                            <div class="w-8 h-8 rounded-full bg-dark-surface flex items-center justify-center mx-auto mb-1">
+                                <i class="ri-box-3-line text-gray-500"></i>
+                            </div>
+                            <span class="text-gray-500">Processing</span>
+                        </div>
+                        <div class="text-center">
+                            <div class="w-8 h-8 rounded-full bg-dark-surface flex items-center justify-center mx-auto mb-1">
+                                <i class="ri-truck-line text-gray-500"></i>
+                            </div>
+                            <span class="text-gray-500">Shipped</span>
+                        </div>
+                        <div class="text-center">
+                            <div class="w-8 h-8 rounded-full bg-dark-surface flex items-center justify-center mx-auto mb-1">
+                                <i class="ri-home-smile-line text-gray-500"></i>
+                            </div>
+                            <span class="text-gray-500">Delivered</span>
+                        </div>
+                    </div>
+                    <p class="text-center text-gray-400 mt-4">
+                        <i class="ri-calendar-line"></i>
+                        Expected by <strong class="text-white"><%= new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) %></strong>
+                    </p>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <a href="/users/orders" class="magnetic-btn flex-1 py-4 rounded-xl bg-gradient-to-r from-accent to-purple-500 text-white font-semibold hover:shadow-lg hover:shadow-accent/25 transition-all duration-300 flex items-center justify-center gap-2">
+                        <i class="ri-file-list-3-line"></i>
+                        View My Orders
+                    </a>
+                    <a href="/shop" class="magnetic-btn flex-1 py-4 rounded-xl bg-dark-card border border-dark-border text-white font-semibold hover:border-accent transition-all duration-300 flex items-center justify-center gap-2">
+                        <i class="ri-shopping-bag-line"></i>
+                        Continue Shopping
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        /* Success Checkmark Animation */
+        .success-checkmark {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto;
+        }
+
+        .check-icon {
+            width: 100px;
+            height: 100px;
+            position: relative;
+            border-radius: 50%;
+            box-sizing: content-box;
+            border: 4px solid #4BB543;
+        }
+
+        .check-icon::before {
+            top: 3px;
+            left: -2px;
+            width: 30px;
+            transform-origin: 100% 50%;
+            border-radius: 100px 0 0 100px;
+        }
+
+        .check-icon::after {
+            top: 0;
+            left: 30px;
+            width: 60px;
+            transform-origin: 0 50%;
+            border-radius: 0 100px 100px 0;
+            animation: rotate-circle 4.25s ease-in;
+        }
+
+        .check-icon::before,
+        .check-icon::after {
+            content: '';
+            height: 100px;
+            position: absolute;
+            background: #0a0a0a;
+            transform: rotate(-45deg);
+        }
+
+        .icon-line {
+            height: 5px;
+            background-color: #4BB543;
+            display: block;
+            border-radius: 2px;
+            position: absolute;
+            z-index: 10;
+        }
+
+        .icon-line.line-tip {
+            top: 46px;
+            left: 14px;
+            width: 25px;
+            transform: rotate(45deg);
+            animation: icon-line-tip 0.75s;
+        }
+
+        .icon-line.line-long {
+            top: 38px;
+            right: 8px;
+            width: 47px;
+            transform: rotate(-45deg);
+            animation: icon-line-long 0.75s;
+        }
+
+        .icon-circle {
+            top: -4px;
+            left: -4px;
+            z-index: 10;
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            position: absolute;
+            box-sizing: content-box;
+            border: 4px solid rgba(75, 181, 67, 0.5);
+        }
+
+        .icon-fix {
+            top: 8px;
+            width: 5px;
+            left: 26px;
+            z-index: 1;
+            height: 85px;
+            position: absolute;
+            transform: rotate(-45deg);
+            background-color: #0a0a0a;
+        }
+
+        @keyframes rotate-circle {
+            0% {
+                transform: rotate(-45deg);
+            }
+            5% {
+                transform: rotate(-45deg);
+            }
+            12% {
+                transform: rotate(-405deg);
+            }
+            100% {
+                transform: rotate(-405deg);
+            }
+        }
+
+        @keyframes icon-line-tip {
+            0% {
+                width: 0;
+                left: 1px;
+                top: 19px;
+            }
+            54% {
+                width: 0;
+                left: 1px;
+                top: 19px;
+            }
+            70% {
+                width: 50px;
+                left: -8px;
+                top: 37px;
+            }
+            84% {
+                width: 17px;
+                left: 21px;
+                top: 48px;
+            }
+            100% {
+                width: 25px;
+                left: 14px;
+                top: 46px;
+            }
+        }
+
+        @keyframes icon-line-long {
+            0% {
+                width: 0;
+                right: 46px;
+                top: 54px;
+            }
+            65% {
+                width: 0;
+                right: 46px;
+                top: 54px;
+            }
+            84% {
+                width: 55px;
+                right: 0px;
+                top: 35px;
+            }
+            100% {
+                width: 47px;
+                right: 8px;
+                top: 38px;
+            }
+        }
+
+        .bg-dark-surface {
+            background: rgba(20, 20, 20, 0.8);
+        }
+    </style>
+
+    <script>
+        // Confetti effect
+        gsap.from('.success-container', {
+            scale: 0,
+            duration: 0.6,
+            ease: 'back.out(1.7)'
+        });
+
+        gsap.from('.stagger-item', {
+            y: 30,
+            opacity: 0,
+            duration: 0.8,
+            delay: 0.3,
+            ease: 'power3.out'
+        });
+    </script>
+
+<%- include('./partials/footer') %>

@@ -1,0 +1,69 @@
+    <!-- Footer -->
+    <footer class="relative z-10 border-t border-dark-border mt-20">
+        <div class="max-w-7xl mx-auto px-6 py-12">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-6">
+                <div class="text-center md:text-left">
+                    <h3 class="text-2xl font-space font-bold gradient-text mb-2">Scatch</h3>
+                    <p class="text-gray-500 text-sm">Premium bags & accessories</p>
+                </div>
+                <div class="flex gap-4">
+                    <a href="#" class="w-10 h-10 rounded-full bg-dark-card border border-dark-border flex items-center justify-center hover:border-accent hover:text-accent transition-all duration-300">
+                        <i class="ri-instagram-line"></i>
+                    </a>
+                    <a href="#" class="w-10 h-10 rounded-full bg-dark-card border border-dark-border flex items-center justify-center hover:border-accent hover:text-accent transition-all duration-300">
+                        <i class="ri-twitter-x-line"></i>
+                    </a>
+                    <a href="#" class="w-10 h-10 rounded-full bg-dark-card border border-dark-border flex items-center justify-center hover:border-accent hover:text-accent transition-all duration-300">
+                        <i class="ri-facebook-fill"></i>
+                    </a>
+                </div>
+                <p class="text-gray-600 text-sm">© 2026 Scatch. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Page Load Animation Script -->
+    <script>
+        // GSAP Animations
+        gsap.registerPlugin(ScrollTrigger);
+
+        // Initial page load animation
+        gsap.from('nav', {
+            y: -100,
+            opacity: 0,
+            duration: 1,
+            ease: 'power3.out'
+        });
+
+        // Animate stagger items on scroll
+        gsap.utils.toArray('.stagger-item').forEach((item, i) => {
+            gsap.to(item, {
+                scrollTrigger: {
+                    trigger: item,
+                    start: 'top 85%',
+                    toggleActions: 'play none none reverse'
+                },
+                opacity: 1,
+                y: 0,
+                duration: 0.8,
+                delay: i * 0.1,
+                ease: 'power3.out'
+            });
+        });
+
+        // Magnetic button effect
+        document.querySelectorAll('.magnetic-btn').forEach(btn => {
+            btn.addEventListener('mousemove', (e) => {
+                const rect = btn.getBoundingClientRect();
+                const x = e.clientX - rect.left - rect.width / 2;
+                const y = e.clientY - rect.top - rect.height / 2;
+                btn.style.transform = `translate(${x * 0.15}px, ${y * 0.15}px)`;
+            });
+            btn.addEventListener('mouseleave', () => {
+                btn.style.transform = 'translate(0, 0)';
+            });
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,74 @@
+<%- include('./partials/header') %>
+
+    <!-- 404 Section -->
+    <div class="relative z-10 min-h-screen flex items-center justify-center px-6">
+        <div class="text-center">
+            <!-- Animated 404 -->
+            <div class="relative mb-8">
+                <h1 class="text-[200px] md:text-[300px] font-space font-bold leading-none gradient-text opacity-20">
+                    404
+                </h1>
+                <div class="absolute inset-0 flex items-center justify-center">
+                    <div class="text-center">
+                        <div class="w-32 h-32 rounded-full bg-dark-card border border-dark-border flex items-center justify-center mx-auto mb-4 animate-float">
+                            <i class="ri-shopping-bag-3-line text-6xl text-gray-600"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <h2 class="text-3xl md:text-4xl font-space font-bold mb-4">
+                Oops! Page Not Found
+            </h2>
+            <p class="text-gray-400 text-lg mb-8 max-w-md mx-auto">
+                The page you're looking for seems to have wandered off. 
+                Let's get you back on track!
+            </p>
+
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a href="/" class="magnetic-btn px-8 py-4 rounded-full bg-gradient-to-r from-accent to-purple-500 text-white font-semibold hover:shadow-lg hover:shadow-accent/25 transition-all duration-300 flex items-center justify-center gap-2">
+                    <i class="ri-home-line"></i>
+                    Back to Home
+                </a>
+                <a href="/shop" class="magnetic-btn px-8 py-4 rounded-full bg-dark-card border border-dark-border text-white font-semibold hover:border-accent transition-all duration-300 flex items-center justify-center gap-2">
+                    <i class="ri-shopping-bag-line"></i>
+                    Continue Shopping
+                </a>
+            </div>
+
+            <!-- Helpful Links -->
+            <div class="mt-16 glass rounded-2xl p-8 max-w-2xl mx-auto">
+                <h3 class="font-semibold mb-6">You might be looking for:</h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <a href="/shop" class="p-4 rounded-xl bg-dark-card hover:bg-dark-border transition-all text-center group">
+                        <i class="ri-shopping-bag-3-line text-2xl text-gray-500 group-hover:text-accent transition-colors block mb-2"></i>
+                        <span class="text-sm text-gray-400 group-hover:text-white transition-colors">Shop</span>
+                    </a>
+                    <a href="/users/cart" class="p-4 rounded-xl bg-dark-card hover:bg-dark-border transition-all text-center group">
+                        <i class="ri-shopping-cart-line text-2xl text-gray-500 group-hover:text-accent transition-colors block mb-2"></i>
+                        <span class="text-sm text-gray-400 group-hover:text-white transition-colors">Cart</span>
+                    </a>
+                    <a href="/about" class="p-4 rounded-xl bg-dark-card hover:bg-dark-border transition-all text-center group">
+                        <i class="ri-information-line text-2xl text-gray-500 group-hover:text-accent transition-colors block mb-2"></i>
+                        <span class="text-sm text-gray-400 group-hover:text-white transition-colors">About</span>
+                    </a>
+                    <a href="/contact" class="p-4 rounded-xl bg-dark-card hover:bg-dark-border transition-all text-center group">
+                        <i class="ri-customer-service-line text-2xl text-gray-500 group-hover:text-accent transition-colors block mb-2"></i>
+                        <span class="text-sm text-gray-400 group-hover:text-white transition-colors">Contact</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Animation -->
+    <script>
+        gsap.from('h1', {
+            scale: 0.5,
+            opacity: 0,
+            duration: 1,
+            ease: 'elastic.out(1, 0.5)'
+        });
+    </script>
+
+<%- include('./partials/footer') %>

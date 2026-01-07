@@ -1,0 +1,125 @@
+<%- include('./partials/header') %>
+
+    <!-- Admin Dashboard Section -->
+    <div class="relative z-10 min-h-screen pt-28 pb-12 px-6">
+        <div class="max-w-7xl mx-auto">
+            <!-- Page Header -->
+            <div class="mb-10 hero-content">
+                <h1 class="text-4xl md:text-5xl font-space font-bold mb-4">
+                    Admin <span class="gradient-text">Dashboard</span>
+                </h1>
+                <p class="text-gray-400">Manage your products and inventory</p>
+            </div>
+
+            <div class="flex flex-col lg:flex-row gap-8">
+                <!-- Sidebar -->
+                <aside class="lg:w-72 flex-shrink-0">
+                    <div class="glass rounded-2xl p-6 sticky top-28">
+                        <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+                            <i class="ri-dashboard-line"></i> Admin Menu
+                        </h3>
+                        <div class="space-y-2">
+                            <a href="/owners/admin" class="flex items-center gap-3 px-4 py-3 rounded-xl bg-dark-card transition-all group">
+                                <div class="w-8 h-8 rounded-lg bg-accent/20 flex items-center justify-center">
+                                    <i class="ri-apps-line text-accent"></i>
+                                </div>
+                                <span class="text-white transition-colors">All Products</span>
+                            </a>
+                            <a href="/owners/product/create" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-dark-card transition-all group">
+                                <div class="w-8 h-8 rounded-lg bg-green-500/20 flex items-center justify-center">
+                                    <i class="ri-add-circle-line text-green-400"></i>
+                                </div>
+                                <span class="text-gray-300 group-hover:text-white transition-colors">Create Product</span>
+                            </a>
+                        </div>
+
+                        <!-- Quick Stats -->
+                        <div class="mt-8 pt-6 border-t border-dark-border">
+                            <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">Quick Stats</h3>
+                            <div class="space-y-3">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-gray-400">Total Products</span>
+                                    <span class="text-white font-semibold">8</span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-gray-400">Active Discounts</span>
+                                    <span class="text-green-400 font-semibold">3</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </aside>
+
+                <!-- Products Grid -->
+                <main class="flex-1">
+                    <!-- Actions Bar -->
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-xl font-semibold flex items-center gap-2">
+                            <i class="ri-shopping-bag-3-line text-accent"></i>
+                            All Products
+                        </h2>
+                        <button class="magnetic-btn px-4 py-2 rounded-xl bg-red-500/20 text-red-400 hover:bg-red-500 hover:text-white transition-all duration-300 flex items-center gap-2 text-sm font-medium">
+                            <i class="ri-delete-bin-6-line"></i>
+                            Delete All
+                        </button>
+                    </div>
+
+                    <!-- Products -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+                        <!-- Sample Product Cards - These will be dynamic in production -->
+                        <div class="stagger-item group">
+                            <div class="glass rounded-2xl overflow-hidden card-hover">
+                                <div class="relative h-56 flex items-center justify-center bg-yellow-300">
+                                    <span class="absolute top-4 left-4 px-3 py-1.5 rounded-full bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs font-bold shadow-lg">
+                                        -20%
+                                    </span>
+                                    <div class="w-32 h-32 bg-yellow-400 rounded-lg"></div>
+                                </div>
+                                <div class="p-5 bg-slate-800">
+                                    <h3 class="font-semibold text-lg mb-2 text-white">Clinge Bag</h3>
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-xl font-bold text-white">₹960</span>
+                                            <span class="line-through text-sm text-gray-400">₹1200</span>
+                                        </div>
+                                        <div class="flex gap-2">
+                                            <button class="w-9 h-9 rounded-full bg-accent/20 hover:bg-accent text-accent hover:text-white flex items-center justify-center transition-all duration-300">
+                                                <i class="ri-edit-line"></i>
+                                            </button>
+                                            <button class="w-9 h-9 rounded-full bg-red-500/20 hover:bg-red-500 text-red-400 hover:text-white flex items-center justify-center transition-all duration-300">
+                                                <i class="ri-delete-bin-6-line"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Add Product Card -->
+                        <a href="/owners/product/create" class="stagger-item group">
+                            <div class="glass rounded-2xl overflow-hidden card-hover h-full min-h-[320px] flex flex-col items-center justify-center border-2 border-dashed border-dark-border hover:border-accent transition-all duration-300">
+                                <div class="w-20 h-20 rounded-full bg-dark-card flex items-center justify-center mb-4 group-hover:bg-accent/20 transition-all duration-300">
+                                    <i class="ri-add-line text-4xl text-gray-500 group-hover:text-accent transition-colors"></i>
+                                </div>
+                                <h3 class="text-lg font-semibold text-gray-400 group-hover:text-white transition-colors">Add New Product</h3>
+                                <p class="text-sm text-gray-600">Click to create</p>
+                            </div>
+                        </a>
+                    </div>
+                </main>
+            </div>
+        </div>
+    </div>
+
+    <!-- Animation Script -->
+    <script>
+        gsap.from('.hero-content', {
+            y: 40,
+            opacity: 0,
+            duration: 1,
+            ease: 'power3.out',
+            delay: 0.2
+        });
+    </script>
+
+<%- include('./partials/footer') %>

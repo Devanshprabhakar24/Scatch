@@ -1,0 +1,129 @@
+<%- include('./partials/header') %>
+
+    <!-- Error Toast -->
+    <% if(error && error.length>0){ %>
+        <div class="fixed top-24 left-1/2 -translate-x-1/2 z-50 animate-bounce">
+            <div class="glass px-6 py-4 rounded-2xl border border-red-500/30 flex items-center gap-3">
+                <div class="w-8 h-8 rounded-full bg-red-500/20 flex items-center justify-center">
+                    <i class="ri-error-warning-line text-red-400"></i>
+                </div>
+                <span class="text-red-400 font-medium"><%= error %></span>
+            </div>
+        </div>
+    <% } %>
+
+    <!-- Hero Section -->
+    <div class="relative z-10 min-h-screen flex items-center justify-center pt-24 pb-12 px-6">
+        <div class="max-w-7xl w-full mx-auto">
+            <!-- Main Hero Content -->
+            <div class="text-center mb-16 hero-content">
+                <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-dark-card border border-dark-border mb-6">
+                    <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
+                    <span class="text-sm text-gray-400">Premium Quality Products</span>
+                </div>
+                <h1 class="text-5xl md:text-7xl font-space font-bold mb-6 leading-tight">
+                    Welcome to <span class="gradient-text">Scatch</span>
+                </h1>
+                <p class="text-xl text-gray-400 max-w-2xl mx-auto mb-8">
+                    Discover premium bags and accessories crafted with passion. 
+                    Elevate your style with our exclusive collection.
+                </p>
+            </div>
+
+            <!-- Auth Cards -->
+            <div class="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+                <!-- Register Card -->
+                <div class="stagger-item glass rounded-3xl p-8 card-hover">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-accent to-purple-500 flex items-center justify-center">
+                            <i class="ri-user-add-line text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-space font-semibold">Create Account</h3>
+                            <p class="text-sm text-gray-500">Join our community</p>
+                        </div>
+                    </div>
+                    <form autocomplete="off" action="/users/register" method="post" class="space-y-4">
+                        <div class="relative group">
+                            <i class="ri-user-line absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-accent transition-colors"></i>
+                            <input class="w-full bg-dark-card border border-dark-border rounded-xl px-4 py-3.5 pl-12 text-white placeholder-gray-500 focus:border-accent focus:ring-1 focus:ring-accent outline-none transition-all" type="text" placeholder="Full Name" name="fullname" required>
+                        </div>
+                        <div class="relative group">
+                            <i class="ri-mail-line absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-accent transition-colors"></i>
+                            <input class="w-full bg-dark-card border border-dark-border rounded-xl px-4 py-3.5 pl-12 text-white placeholder-gray-500 focus:border-accent focus:ring-1 focus:ring-accent outline-none transition-all" type="email" placeholder="Email Address" name="email" required>
+                        </div>
+                        <div class="relative group">
+                            <i class="ri-lock-line absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-accent transition-colors"></i>
+                            <input class="w-full bg-dark-card border border-dark-border rounded-xl px-4 py-3.5 pl-12 text-white placeholder-gray-500 focus:border-accent focus:ring-1 focus:ring-accent outline-none transition-all" type="password" placeholder="Password" name="password" required>
+                        </div>
+                        <button type="submit" class="magnetic-btn w-full py-4 rounded-xl bg-gradient-to-r from-accent to-purple-500 text-white font-semibold text-lg hover:shadow-lg hover:shadow-accent/25 transition-all duration-300 flex items-center justify-center gap-2">
+                            <span>Create Account</span>
+                            <i class="ri-arrow-right-line"></i>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Login Card -->
+                <div class="stagger-item glass rounded-3xl p-8 card-hover">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-pink-500 to-orange-400 flex items-center justify-center">
+                            <i class="ri-login-box-line text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-space font-semibold">Welcome Back</h3>
+                            <p class="text-sm text-gray-500">Login to your account</p>
+                        </div>
+                    </div>
+                    <form autocomplete="off" action="/users/login" method="post" class="space-y-4">
+                        <div class="relative group">
+                            <i class="ri-mail-line absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-pink-400 transition-colors"></i>
+                            <input class="w-full bg-dark-card border border-dark-border rounded-xl px-4 py-3.5 pl-12 text-white placeholder-gray-500 focus:border-pink-400 focus:ring-1 focus:ring-pink-400 outline-none transition-all" type="email" placeholder="Email Address" name="email" required>
+                        </div>
+                        <div class="relative group">
+                            <i class="ri-lock-line absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-pink-400 transition-colors"></i>
+                            <input class="w-full bg-dark-card border border-dark-border rounded-xl px-4 py-3.5 pl-12 text-white placeholder-gray-500 focus:border-pink-400 focus:ring-1 focus:ring-pink-400 outline-none transition-all" type="password" placeholder="Password" name="password" required>
+                        </div>
+                        <div class="flex items-center justify-between text-sm">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" class="w-4 h-4 rounded border-dark-border bg-dark-card accent-pink-400">
+                                <span class="text-gray-400">Remember me</span>
+                            </label>
+                            <a href="#" class="text-pink-400 hover:text-pink-300 transition-colors">Forgot password?</a>
+                        </div>
+                        <button type="submit" class="magnetic-btn w-full py-4 rounded-xl bg-gradient-to-r from-pink-500 to-orange-400 text-white font-semibold text-lg hover:shadow-lg hover:shadow-pink-500/25 transition-all duration-300 flex items-center justify-center gap-2">
+                            <span>Sign In</span>
+                            <i class="ri-arrow-right-line"></i>
+                        </button>
+                    </form>
+                    <div class="mt-6 pt-6 border-t border-dark-border">
+                        <p class="text-center text-gray-500 text-sm">
+                            Admin? <a href="/owners/admin" class="text-accent hover:text-accent-light transition-colors">Access Dashboard</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scroll Indicator -->
+            <div class="flex justify-center mt-16">
+                <div class="flex flex-col items-center gap-2 text-gray-500">
+                    <span class="text-sm">Scroll to explore</span>
+                    <div class="w-6 h-10 rounded-full border-2 border-gray-600 flex justify-center pt-2">
+                        <div class="w-1.5 h-3 bg-accent rounded-full animate-bounce"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hero Animation Script -->
+    <script>
+        gsap.from('.hero-content', {
+            y: 60,
+            opacity: 0,
+            duration: 1.2,
+            ease: 'power3.out',
+            delay: 0.3
+        });
+    </script>
+
+<%- include('./partials/footer') %>

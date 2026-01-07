@@ -1,0 +1,136 @@
+<%- include('./partials/header') %>
+
+    <!-- Success Toast -->
+    <% if(success.length>0){ %>
+        <div class="fixed top-24 left-1/2 -translate-x-1/2 z-50">
+            <div class="glass px-6 py-4 rounded-2xl border border-green-500/30 flex items-center gap-3 animate-bounce">
+                <div class="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center">
+                    <i class="ri-check-line text-green-400"></i>
+                </div>
+                <span class="text-green-400 font-medium"><%= success %></span>
+            </div>
+        </div>
+    <% } %>
+
+    <!-- Create Product Section -->
+    <div class="relative z-10 min-h-screen pt-28 pb-12 px-6">
+        <div class="max-w-7xl mx-auto">
+            <div class="flex flex-col lg:flex-row gap-8">
+                <!-- Sidebar -->
+                <aside class="lg:w-72 flex-shrink-0">
+                    <div class="glass rounded-2xl p-6 sticky top-28">
+                        <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+                            <i class="ri-dashboard-line"></i> Admin Menu
+                        </h3>
+                        <div class="space-y-2">
+                            <a href="/owners/admin" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-dark-card transition-all group">
+                                <div class="w-8 h-8 rounded-lg bg-accent/20 flex items-center justify-center">
+                                    <i class="ri-apps-line text-accent"></i>
+                                </div>
+                                <span class="text-gray-300 group-hover:text-white transition-colors">All Products</span>
+                            </a>
+                            <a href="/owners/product/create" class="flex items-center gap-3 px-4 py-3 rounded-xl bg-dark-card transition-all group">
+                                <div class="w-8 h-8 rounded-lg bg-green-500/20 flex items-center justify-center">
+                                    <i class="ri-add-circle-line text-green-400"></i>
+                                </div>
+                                <span class="text-white transition-colors">Create Product</span>
+                            </a>
+                        </div>
+                    </div>
+                </aside>
+
+                <!-- Create Form -->
+                <main class="flex-1">
+                    <div class="glass rounded-2xl p-8">
+                        <div class="flex items-center gap-3 mb-8">
+                            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-accent to-purple-500 flex items-center justify-center">
+                                <i class="ri-add-box-line text-2xl"></i>
+                            </div>
+                            <div>
+                                <h2 class="text-2xl font-space font-bold">Create New Product</h2>
+                                <p class="text-gray-500">Add a new item to your store</p>
+                            </div>
+                        </div>
+
+                        <form autocomplete="off" action="/owners/product/create" method="post" enctype="multipart/form-data" class="space-y-8">
+                            <!-- Product Details -->
+                            <div>
+                                <h3 class="text-lg font-semibold mb-4 flex items-center gap-2">
+                                    <i class="ri-information-line text-accent"></i>
+                                    Product Details
+                                </h3>
+                                <div class="space-y-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-400 mb-2">Product Image</label>
+                                        <div class="relative">
+                                            <input name="image" type="file" accept="image/*" class="w-full bg-dark-card border border-dark-border rounded-xl px-4 py-4 text-white file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-accent file:text-white file:cursor-pointer hover:file:bg-accent-light transition-all cursor-pointer focus:border-accent focus:ring-1 focus:ring-accent outline-none">
+                                        </div>
+                                    </div>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        <div class="relative group">
+                                            <i class="ri-price-tag-3-line absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-accent transition-colors"></i>
+                                            <input name="name" type="text" placeholder="Product Name" class="w-full bg-dark-card border border-dark-border rounded-xl px-4 py-3.5 pl-12 text-white placeholder-gray-500 focus:border-accent focus:ring-1 focus:ring-accent outline-none transition-all" required>
+                                        </div>
+                                        <div class="relative group">
+                                            <i class="ri-money-rupee-circle-line absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-accent transition-colors"></i>
+                                            <input name="price" type="number" placeholder="Price (₹)" class="w-full bg-dark-card border border-dark-border rounded-xl px-4 py-3.5 pl-12 text-white placeholder-gray-500 focus:border-accent focus:ring-1 focus:ring-accent outline-none transition-all" required>
+                                        </div>
+                                        <div class="relative group">
+                                            <i class="ri-percent-line absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-accent transition-colors"></i>
+                                            <input name="discount" type="number" placeholder="Discount (%)" class="w-full bg-dark-card border border-dark-border rounded-xl px-4 py-3.5 pl-12 text-white placeholder-gray-500 focus:border-accent focus:ring-1 focus:ring-accent outline-none transition-all">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Panel Design -->
+                            <div>
+                                <h3 class="text-lg font-semibold mb-4 flex items-center gap-2">
+                                    <i class="ri-palette-line text-pink-400"></i>
+                                    Card Design
+                                </h3>
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                    <div class="text-center">
+                                        <label class="block text-sm font-medium text-gray-400 mb-3">Background Color</label>
+                                        <div class="relative">
+                                            <input name="bgcolor" type="color" value="#fef08a" class="w-full h-16 rounded-xl cursor-pointer border-2 border-dark-border hover:border-accent transition-all">
+                                        </div>
+                                    </div>
+                                    <div class="text-center">
+                                        <label class="block text-sm font-medium text-gray-400 mb-3">Panel Color</label>
+                                        <div class="relative">
+                                            <input name="panelcolor" type="color" value="#1e293b" class="w-full h-16 rounded-xl cursor-pointer border-2 border-dark-border hover:border-accent transition-all">
+                                        </div>
+                                    </div>
+                                    <div class="text-center">
+                                        <label class="block text-sm font-medium text-gray-400 mb-3">Text Color</label>
+                                        <div class="relative">
+                                            <input name="textcolor" type="color" value="#ffffff" class="w-full h-16 rounded-xl cursor-pointer border-2 border-dark-border hover:border-accent transition-all">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Submit Button -->
+                            <button type="submit" class="magnetic-btn w-full py-4 rounded-xl bg-gradient-to-r from-accent to-purple-500 text-white font-semibold text-lg hover:shadow-lg hover:shadow-accent/25 transition-all duration-300 flex items-center justify-center gap-2">
+                                <i class="ri-add-circle-line"></i>
+                                Create Product
+                            </button>
+                        </form>
+                    </div>
+                </main>
+            </div>
+        </div>
+    </div>
+
+    <!-- Animation Script -->
+    <script>
+        setTimeout(() => {
+            const toast = document.querySelector('.animate-bounce');
+            if (toast) {
+                gsap.to(toast, { opacity: 0, y: -20, duration: 0.5, onComplete: () => toast.remove() });
+            }
+        }, 3000);
+    </script>
+
+<%- include('./partials/footer') %>

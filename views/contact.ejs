@@ -1,0 +1,152 @@
+<%- include('./partials/header') %>
+
+    <!-- Contact Section -->
+    <div class="relative z-10 min-h-screen pt-28 pb-12 px-6">
+        <div class="max-w-7xl mx-auto">
+            <!-- Page Header -->
+            <div class="text-center mb-16 hero-content">
+                <h1 class="text-4xl md:text-5xl font-space font-bold mb-4">
+                    Get in <span class="gradient-text">Touch</span>
+                </h1>
+                <p class="text-xl text-gray-400 max-w-xl mx-auto">
+                    Have questions? We'd love to hear from you. Send us a message and we'll respond as soon as possible.
+                </p>
+            </div>
+
+            <div class="grid lg:grid-cols-2 gap-12">
+                <!-- Contact Form -->
+                <div class="stagger-item">
+                    <div class="glass rounded-3xl p-8">
+                        <h2 class="text-2xl font-semibold mb-6 flex items-center gap-2">
+                            <i class="ri-mail-send-line text-accent"></i>
+                            Send us a Message
+                        </h2>
+                        <form class="space-y-5">
+                            <div class="grid md:grid-cols-2 gap-5">
+                                <div class="relative group">
+                                    <i class="ri-user-line absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-accent transition-colors"></i>
+                                    <input type="text" placeholder="Your Name" class="w-full bg-dark-card border border-dark-border rounded-xl px-4 py-3.5 pl-12 text-white placeholder-gray-500 focus:border-accent focus:ring-1 focus:ring-accent outline-none transition-all" required>
+                                </div>
+                                <div class="relative group">
+                                    <i class="ri-mail-line absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-accent transition-colors"></i>
+                                    <input type="email" placeholder="Your Email" class="w-full bg-dark-card border border-dark-border rounded-xl px-4 py-3.5 pl-12 text-white placeholder-gray-500 focus:border-accent focus:ring-1 focus:ring-accent outline-none transition-all" required>
+                                </div>
+                            </div>
+                            <div class="relative group">
+                                <i class="ri-chat-1-line absolute left-4 top-4 text-gray-500 group-focus-within:text-accent transition-colors"></i>
+                                <select class="w-full bg-dark-card border border-dark-border rounded-xl px-4 py-3.5 pl-12 text-gray-500 focus:border-accent focus:ring-1 focus:ring-accent outline-none transition-all cursor-pointer">
+                                    <option value="">Select a Subject</option>
+                                    <option value="general">General Inquiry</option>
+                                    <option value="order">Order Support</option>
+                                    <option value="return">Returns & Refunds</option>
+                                    <option value="feedback">Feedback</option>
+                                    <option value="business">Business Inquiry</option>
+                                </select>
+                            </div>
+                            <div class="relative group">
+                                <i class="ri-message-2-line absolute left-4 top-4 text-gray-500 group-focus-within:text-accent transition-colors"></i>
+                                <textarea placeholder="Your Message" rows="5" class="w-full bg-dark-card border border-dark-border rounded-xl px-4 py-3.5 pl-12 text-white placeholder-gray-500 focus:border-accent focus:ring-1 focus:ring-accent outline-none transition-all resize-none" required></textarea>
+                            </div>
+                            <button type="submit" class="magnetic-btn w-full py-4 rounded-xl bg-gradient-to-r from-accent to-purple-500 text-white font-semibold text-lg hover:shadow-lg hover:shadow-accent/25 transition-all duration-300 flex items-center justify-center gap-2">
+                                <i class="ri-send-plane-line"></i>
+                                Send Message
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Contact Info -->
+                <div class="space-y-6 stagger-item">
+                    <!-- Contact Cards -->
+                    <div class="glass rounded-2xl p-6 card-hover">
+                        <div class="flex items-start gap-4">
+                            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-accent to-purple-500 flex items-center justify-center flex-shrink-0">
+                                <i class="ri-map-pin-line text-2xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-lg mb-1">Visit Us</h3>
+                                <p class="text-gray-400">123 Fashion Street, Koramangala</p>
+                                <p class="text-gray-400">Bangalore, Karnataka 560034</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="glass rounded-2xl p-6 card-hover">
+                        <div class="flex items-start gap-4">
+                            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-pink-500 to-orange-400 flex items-center justify-center flex-shrink-0">
+                                <i class="ri-phone-line text-2xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-lg mb-1">Call Us</h3>
+                                <p class="text-gray-400">+91 98765 43210</p>
+                                <p class="text-gray-400">Mon - Sat, 9am - 6pm IST</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="glass rounded-2xl p-6 card-hover">
+                        <div class="flex items-start gap-4">
+                            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-green-400 to-cyan-500 flex items-center justify-center flex-shrink-0">
+                                <i class="ri-mail-line text-2xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-lg mb-1">Email Us</h3>
+                                <p class="text-gray-400">support@scatch.com</p>
+                                <p class="text-gray-400">We reply within 24 hours</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Social Links -->
+                    <div class="glass rounded-2xl p-6">
+                        <h3 class="font-semibold text-lg mb-4">Follow Us</h3>
+                        <div class="flex gap-3">
+                            <a href="#" class="w-12 h-12 rounded-xl bg-dark-card border border-dark-border flex items-center justify-center hover:border-accent hover:text-accent transition-all duration-300">
+                                <i class="ri-instagram-line text-xl"></i>
+                            </a>
+                            <a href="#" class="w-12 h-12 rounded-xl bg-dark-card border border-dark-border flex items-center justify-center hover:border-accent hover:text-accent transition-all duration-300">
+                                <i class="ri-twitter-x-line text-xl"></i>
+                            </a>
+                            <a href="#" class="w-12 h-12 rounded-xl bg-dark-card border border-dark-border flex items-center justify-center hover:border-accent hover:text-accent transition-all duration-300">
+                                <i class="ri-facebook-fill text-xl"></i>
+                            </a>
+                            <a href="#" class="w-12 h-12 rounded-xl bg-dark-card border border-dark-border flex items-center justify-center hover:border-accent hover:text-accent transition-all duration-300">
+                                <i class="ri-linkedin-fill text-xl"></i>
+                            </a>
+                            <a href="#" class="w-12 h-12 rounded-xl bg-dark-card border border-dark-border flex items-center justify-center hover:border-accent hover:text-accent transition-all duration-300">
+                                <i class="ri-youtube-line text-xl"></i>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- FAQ Link -->
+                    <div class="glass rounded-2xl p-6 border border-accent/30">
+                        <div class="flex items-center gap-4">
+                            <div class="w-14 h-14 rounded-2xl bg-accent/20 flex items-center justify-center flex-shrink-0">
+                                <i class="ri-question-line text-2xl text-accent"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="font-semibold text-lg mb-1">Have Questions?</h3>
+                                <p class="text-gray-400 text-sm">Check out our FAQ section for quick answers</p>
+                            </div>
+                            <a href="/faq" class="magnetic-btn px-5 py-2.5 rounded-xl bg-accent text-white font-medium hover:shadow-lg hover:shadow-accent/25 transition-all">
+                                View FAQ
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Map Section -->
+            <div class="mt-16 glass rounded-3xl overflow-hidden h-80">
+                <div class="w-full h-full bg-dark-card flex items-center justify-center">
+                    <div class="text-center">
+                        <i class="ri-map-2-line text-6xl text-gray-600 mb-4"></i>
+                        <p class="text-gray-500">Interactive map would go here</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<%- include('./partials/footer') %>

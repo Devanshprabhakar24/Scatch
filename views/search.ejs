@@ -1,0 +1,106 @@
+<%- include('./partials/header') %>
+
+    <!-- Search Results Section -->
+    <div class="relative z-10 min-h-screen pt-28 pb-12 px-6">
+        <div class="max-w-7xl mx-auto">
+            <!-- Search Header -->
+            <div class="mb-10">
+                <form action="/search" method="GET" class="max-w-2xl mx-auto">
+                    <div class="relative">
+                        <i class="ri-search-line absolute left-5 top-1/2 -translate-y-1/2 text-gray-500 text-xl"></i>
+                        <input type="text" name="q" value="<%= query %>" placeholder="Search products..." 
+                               class="w-full bg-dark-card border border-dark-border rounded-2xl px-5 py-4 pl-14 text-lg text-white placeholder-gray-500 focus:border-accent focus:ring-1 focus:ring-accent outline-none transition-all">
+                        <button type="submit" class="absolute right-3 top-1/2 -translate-y-1/2 px-6 py-2 rounded-xl bg-accent text-white font-medium hover:bg-accent-light transition-all">
+                            Search
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Results Info -->
+            <div class="mb-8 text-center">
+                <% if(query) { %>
+                <h1 class="text-2xl font-semibold mb-2">
+                    Search results for "<span class="gradient-text"><%= query %></span>"
+                </h1>
+                <p class="text-gray-400"><%= results ? results.length : 0 %> products found</p>
+                <% } else { %>
+                <h1 class="text-2xl font-semibold mb-2">Search Products</h1>
+                <p class="text-gray-400">Enter a search term to find products</p>
+                <% } %>
+            </div>
+
+            <% if(results && results.length > 0) { %>
+            <!-- Results Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <% results.forEach(function(product){ %>
+                <div class="stagger-item group">
+                    <div class="glass rounded-2xl overflow-hidden card-hover">
+                        <div class="relative h-56 flex items-center justify-center overflow-hidden" style="background: <%= product.bgcolor %>;">
+                            <% if(product.discount > 0) { %>
+                            <span class="absolute top-4 left-4 px-3 py-1.5 rounded-full bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs font-bold shadow-lg">
+                                -<%= product.discount %>%
+                            </span>
+                            <% } %>
+                            <% if(product.image) { %>
+                            <img class="h-44 object-contain transform group-hover:scale-110 transition-transform duration-500" 
+                                 src="data:image/jpeg;base64,<%= product.image.toString('base64') %>" 
+                                 alt="<%= product.name %>">
+                            <% } %>
+                            <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                                <a href="/product/<%= product._id %>" class="magnetic-btn px-6 py-3 rounded-full bg-white text-black font-semibold transform -translate-y-4 group-hover:translate-y-0 transition-all duration-300">
+                                    View Details
+                                </a>
+                            </div>
+                        </div>
+                        <div class="p-5" style="background: <%= product.panelcolor %>;">
+                            <a href="/product/<%= product._id %>" class="font-semibold text-lg mb-2 block hover:opacity-80 transition-opacity" style="color: <%= product.textcolor %>;"><%= product.name %></a>
+                            <div class="flex items-center justify-between">
+                                <span class="text-xl font-bold" style="color: <%= product.textcolor %>;">₹<%= product.price - (product.price * product.discount / 100) %></span>
+                                <a href="/users/cart/add/<%= product._id %>" class="w-10 h-10 rounded-full bg-white/20 hover:bg-white hover:text-black flex items-center justify-center transition-all duration-300" style="color: <%= product.textcolor %>;">
+                                    <i class="ri-add-line text-xl"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <% }) %>
+            </div>
+            <% } else if(query) { %>
+            <!-- No Results -->
+            <div class="glass rounded-2xl p-12 text-center max-w-lg mx-auto">
+                <div class="w-32 h-32 rounded-full bg-dark-card mx-auto flex items-center justify-center mb-6">
+                    <i class="ri-search-line text-5xl text-gray-600"></i>
+                </div>
+                <h3 class="text-2xl font-semibold text-gray-300 mb-2">No results found</h3>
+                <p class="text-gray-500 mb-6">We couldn't find any products matching "<%= query %>"</p>
+                <div class="space-y-3">
+                    <p class="text-sm text-gray-400">Try:</p>
+                    <ul class="text-sm text-gray-500 space-y-1">
+                        <li>• Checking your spelling</li>
+                        <li>• Using more general terms</li>
+                        <li>• Searching for a different product</li>
+                    </ul>
+                </div>
+                <a href="/shop" class="magnetic-btn inline-flex items-center gap-2 px-6 py-3 rounded-full bg-accent text-white font-medium mt-6 hover:shadow-lg hover:shadow-accent/25 transition-all duration-300">
+                    Browse All Products
+                </a>
+            </div>
+            <% } %>
+
+            <!-- Popular Searches -->
+            <div class="mt-16">
+                <h3 class="text-xl font-semibold mb-6 text-center">Popular Searches</h3>
+                <div class="flex flex-wrap justify-center gap-3">
+                    <a href="/search?q=bag" class="px-5 py-2.5 rounded-full bg-dark-card border border-dark-border text-gray-400 hover:border-accent hover:text-white transition-all">Bags</a>
+                    <a href="/search?q=backpack" class="px-5 py-2.5 rounded-full bg-dark-card border border-dark-border text-gray-400 hover:border-accent hover:text-white transition-all">Backpacks</a>
+                    <a href="/search?q=wallet" class="px-5 py-2.5 rounded-full bg-dark-card border border-dark-border text-gray-400 hover:border-accent hover:text-white transition-all">Wallets</a>
+                    <a href="/search?q=accessories" class="px-5 py-2.5 rounded-full bg-dark-card border border-dark-border text-gray-400 hover:border-accent hover:text-white transition-all">Accessories</a>
+                    <a href="/search?q=leather" class="px-5 py-2.5 rounded-full bg-dark-card border border-dark-border text-gray-400 hover:border-accent hover:text-white transition-all">Leather</a>
+                    <a href="/search?q=travel" class="px-5 py-2.5 rounded-full bg-dark-card border border-dark-border text-gray-400 hover:border-accent hover:text-white transition-all">Travel</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<%- include('./partials/footer') %>

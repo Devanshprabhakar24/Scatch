@@ -1,0 +1,172 @@
+<%- include('./partials/header') %>
+
+    <!-- Profile Section -->
+    <div class="relative z-10 min-h-screen pt-28 pb-12 px-6">
+        <div class="max-w-5xl mx-auto">
+            <!-- Profile Header -->
+            <div class="glass rounded-3xl p-8 mb-8">
+                <div class="flex flex-col md:flex-row items-center gap-8">
+                    <!-- Avatar -->
+                    <div class="relative">
+                        <div class="w-32 h-32 rounded-full bg-gradient-to-br from-accent to-purple-500 flex items-center justify-center text-5xl font-bold">
+                            <%= user.fullname.charAt(0).toUpperCase() %>
+                        </div>
+                        <button class="absolute bottom-0 right-0 w-10 h-10 rounded-full bg-dark-card border border-dark-border flex items-center justify-center hover:border-accent transition-all">
+                            <i class="ri-camera-line"></i>
+                        </button>
+                    </div>
+                    <!-- Info -->
+                    <div class="text-center md:text-left flex-1">
+                        <h1 class="text-3xl font-space font-bold mb-2"><%= user.fullname %></h1>
+                        <p class="text-gray-400 mb-4"><%= user.email %></p>
+                        <div class="flex flex-wrap gap-4 justify-center md:justify-start">
+                            <div class="px-4 py-2 rounded-xl bg-dark-card border border-dark-border">
+                                <span class="text-gray-500 text-sm">Member since</span>
+                                <p class="font-semibold">Jan 2026</p>
+                            </div>
+                            <div class="px-4 py-2 rounded-xl bg-dark-card border border-dark-border">
+                                <span class="text-gray-500 text-sm">Orders</span>
+                                <p class="font-semibold"><%= user.cart ? user.cart.length : 0 %></p>
+                            </div>
+                            <div class="px-4 py-2 rounded-xl bg-dark-card border border-dark-border">
+                                <span class="text-gray-500 text-sm">Wishlist</span>
+                                <p class="font-semibold">0</p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Actions -->
+                    <div class="flex gap-3">
+                        <button class="magnetic-btn px-6 py-3 rounded-xl bg-gradient-to-r from-accent to-purple-500 text-white font-medium hover:shadow-lg hover:shadow-accent/25 transition-all duration-300">
+                            <i class="ri-edit-line mr-2"></i>Edit Profile
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profile Tabs -->
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- Sidebar -->
+                <div class="glass rounded-2xl p-6 h-fit">
+                    <nav class="space-y-2">
+                        <a href="/users/profile" class="flex items-center gap-3 px-4 py-3 rounded-xl bg-dark-card transition-all">
+                            <i class="ri-user-line text-accent"></i>
+                            <span>My Profile</span>
+                        </a>
+                        <a href="/users/orders" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-dark-card transition-all text-gray-400 hover:text-white">
+                            <i class="ri-shopping-bag-3-line"></i>
+                            <span>My Orders</span>
+                        </a>
+                        <a href="/users/wishlist" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-dark-card transition-all text-gray-400 hover:text-white">
+                            <i class="ri-heart-line"></i>
+                            <span>Wishlist</span>
+                        </a>
+                        <a href="/users/addresses" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-dark-card transition-all text-gray-400 hover:text-white">
+                            <i class="ri-map-pin-line"></i>
+                            <span>Addresses</span>
+                        </a>
+                        <a href="/users/settings" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-dark-card transition-all text-gray-400 hover:text-white">
+                            <i class="ri-settings-3-line"></i>
+                            <span>Settings</span>
+                        </a>
+                        <div class="border-t border-dark-border my-4"></div>
+                        <a href="/users/logout" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-red-500/10 transition-all text-red-400">
+                            <i class="ri-logout-box-line"></i>
+                            <span>Logout</span>
+                        </a>
+                    </nav>
+                </div>
+
+                <!-- Content -->
+                <div class="md:col-span-2 space-y-6">
+                    <!-- Personal Information -->
+                    <div class="glass rounded-2xl p-6">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-xl font-semibold flex items-center gap-2">
+                                <i class="ri-user-settings-line text-accent"></i>
+                                Personal Information
+                            </h3>
+                            <button class="text-accent hover:text-accent-light transition-colors">
+                                <i class="ri-edit-line"></i> Edit
+                            </button>
+                        </div>
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="text-sm text-gray-500 block mb-1">Full Name</label>
+                                <p class="font-medium"><%= user.fullname %></p>
+                            </div>
+                            <div>
+                                <label class="text-sm text-gray-500 block mb-1">Email Address</label>
+                                <p class="font-medium"><%= user.email %></p>
+                            </div>
+                            <div>
+                                <label class="text-sm text-gray-500 block mb-1">Phone Number</label>
+                                <p class="font-medium text-gray-400">Not added</p>
+                            </div>
+                            <div>
+                                <label class="text-sm text-gray-500 block mb-1">Date of Birth</label>
+                                <p class="font-medium text-gray-400">Not added</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Saved Addresses -->
+                    <div class="glass rounded-2xl p-6">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-xl font-semibold flex items-center gap-2">
+                                <i class="ri-map-pin-line text-pink-400"></i>
+                                Saved Addresses
+                            </h3>
+                            <button class="magnetic-btn px-4 py-2 rounded-xl bg-dark-card border border-dark-border text-sm font-medium hover:border-accent transition-all">
+                                <i class="ri-add-line"></i> Add New
+                            </button>
+                        </div>
+                        <div class="text-center py-8 text-gray-500">
+                            <i class="ri-map-pin-line text-4xl mb-3 block"></i>
+                            <p>No addresses saved yet</p>
+                            <p class="text-sm">Add an address for faster checkout</p>
+                        </div>
+                    </div>
+
+                    <!-- Security -->
+                    <div class="glass rounded-2xl p-6">
+                        <h3 class="text-xl font-semibold flex items-center gap-2 mb-6">
+                            <i class="ri-shield-check-line text-green-400"></i>
+                            Security
+                        </h3>
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between p-4 rounded-xl bg-dark-card">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-lg bg-accent/20 flex items-center justify-center">
+                                        <i class="ri-lock-password-line text-accent"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-medium">Password</h4>
+                                        <p class="text-sm text-gray-500">Last changed 30 days ago</p>
+                                    </div>
+                                </div>
+                                <button class="px-4 py-2 rounded-lg border border-dark-border hover:border-accent transition-all text-sm">
+                                    Change
+                                </button>
+                            </div>
+                            <div class="flex items-center justify-between p-4 rounded-xl bg-dark-card">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-lg bg-green-500/20 flex items-center justify-center">
+                                        <i class="ri-smartphone-line text-green-400"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-medium">Two-Factor Authentication</h4>
+                                        <p class="text-sm text-gray-500">Add extra security to your account</p>
+                                    </div>
+                                </div>
+                                <button class="px-4 py-2 rounded-lg bg-green-500/20 text-green-400 hover:bg-green-500 hover:text-white transition-all text-sm">
+                                    Enable
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<%- include('./partials/footer') %>
