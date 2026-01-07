@@ -73,13 +73,12 @@ const orderSchema = mongoose.Schema({
     }
 });
 
-// Generate unique order ID before saving
-orderSchema.pre('save', function (next) {
+// Generate unique order ID before saving (Mongoose 7+ compatible)
+orderSchema.pre('save', function () {
     if (!this.orderId) {
         this.orderId = 'ORD' + Date.now() + Math.random().toString(36).substring(2, 7).toUpperCase();
     }
     this.updatedAt = Date.now();
-    next();
 });
 
 const Order = mongoose.model("order", orderSchema);
