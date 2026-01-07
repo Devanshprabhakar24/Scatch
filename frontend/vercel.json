@@ -1,26 +1,22 @@
 {
   "buildCommand": "npm run build",
   "outputDirectory": "public",
-  "framework": "static",
-  "env": {
-    "BACKEND_URL": "@backend_url"
-  },
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "${BACKEND_URL}/api/:path*"
+      "destination": "https://scatch-backend-vdrh.onrender.com/api/:path*"
     },
     {
       "source": "/owners/:path*",
-      "destination": "${BACKEND_URL}/owners/:path*"
+      "destination": "https://scatch-backend-vdrh.onrender.com/owners/:path*"
     },
     {
       "source": "/users/:path*",
-      "destination": "${BACKEND_URL}/users/:path*"
+      "destination": "https://scatch-backend-vdrh.onrender.com/users/:path*"
     },
     {
       "source": "/products/:path*",
-      "destination": "${BACKEND_URL}/products/:path*"
+      "destination": "https://scatch-backend-vdrh.onrender.com/products/:path*"
     }
   ],
   "headers": [
