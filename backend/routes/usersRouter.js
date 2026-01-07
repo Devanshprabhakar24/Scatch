@@ -155,46 +155,51 @@ router.get("/checkout", isLoggedIn, async function (req, res) {
 // Place order
 router.post("/place-order", isLoggedIn, async function (req, res) {
     try {
-        console.log("Place order initiated for user:", req.user?.email);
+        console.log("=== PLACE ORDER START ===");
+        console.log("User email:", req.user?.email);
+        console.log("Request body:", JSON.stringify(req.body));
 
         if (!req.user || !req.user.email) {
-            console.log("No user in request");
+            console.log("ERROR: No user in request");
             return res.redirect("/?error=Please login to place an order");
         }
 
         let user = await userModel.findOne({ email: req.user.email });
 
         if (!user) {
-            console.log("User not found in database");
+            console.log("ERROR: User not found in database");
             return res.redirect("/?error=User not found");
         }
 
+        console.log("User found:", user._id);
+
         if (!user.cart || user.cart.length === 0) {
-            console.log("Cart is empty");
+            console.log("ERROR: Cart is empty");
             return res.redirect("/users/cart?error=Your cart is empty");
         }
 
-        console.log("Cart items:", user.cart.length);
+        console.log("Cart items count:", user.cart.length);
 
         // Fetch products from cart
         let cartProducts = await productModel.find({ _id: { $in: user.cart } });
 
         if (!cartProducts || cartProducts.length === 0) {
-            console.log("No products found for cart items");
+            console.log("ERROR: No products found for cart items");
             return res.redirect("/users/cart?error=Products not found");
         }
 
-        console.log("Products found:", cartProducts.length);
+        console.log("Products found count:", cartProducts.length);
 
         // Calculate totals
         let totalPrice = 0;
         let totalDiscount = 0;
         cartProducts.forEach(product => {
-            totalPrice += product.price;
+            totalPrice += product.price || 0;
             totalDiscount += product.discount || 0;
         });
 
         const finalAmount = totalPrice - totalDiscount + 20;
+        console.log("Totals - Price:", totalPrice, "Discount:", totalDiscount, "Final:", finalAmount);
 
         // Create order products array with details
         const orderProducts = cartProducts.map(product => ({
@@ -206,13 +211,12 @@ router.post("/place-order", isLoggedIn, async function (req, res) {
             bgcolor: product.bgcolor
         }));
 
-        console.log("Creating order with finalAmount:", finalAmount);
-
         // Generate order ID
         const orderId = 'ORD' + Date.now() + Math.random().toString(36).substring(2, 7).toUpperCase();
+        console.log("Generated orderId:", orderId);
 
-        // Create the order directly with create method
-        const order = await orderModel.create({
+        // Prepare order data
+        const orderData = {
             user: user._id,
             products: orderProducts,
             totalAmount: totalPrice,
@@ -223,34 +227,46 @@ router.post("/place-order", isLoggedIn, async function (req, res) {
             orderId: orderId,
             shippingAddress: {
                 fullname: req.body.fullname || user.fullname || 'Customer',
-                phone: req.body.phone || (user.contact ? String(user.contact) : ''),
-                address: req.body.address || '',
-                city: req.body.city || '',
-                state: req.body.state || '',
-                pincode: req.body.pincode || ''
+                phone: req.body.phone || (user.contact ? String(user.contact) : '0000000000'),
+                address: req.body.address || 'Not provided',
+                city: req.body.city || 'Not provided',
+                state: req.body.state || 'Not provided',
+                pincode: req.body.pincode || '000000'
             },
             paymentMethod: req.body.paymentMethod || 'cod',
             paymentStatus: 'pending',
             orderStatus: 'confirmed'
+        };
+
+        console.log("Order data prepared, creating order...");
+
+        // Create the order
+        const order = new orderModel(orderData);
+        const savedOrder = await order.save();
+
+        console.log("=== ORDER SAVED SUCCESSFULLY ===");
+        console.log("Order _id:", savedOrder._id);
+        console.log("Order orderId:", savedOrder.orderId);
+
+        // Update user - add order and clear cart
+        await userModel.findByIdAndUpdate(user._id, {
+            $push: { orders: savedOrder._id },
+            $set: { cart: [] }
         });
 
-        console.log("Order created with ID:", order._id, "OrderId:", order.orderId);
+        console.log("User updated, cart cleared");
+        console.log("=== PLACE ORDER END - SUCCESS ===");
 
-        // Add order to user's orders array
-        if (!user.orders) {
-            user.orders = [];
-        }
-        user.orders.push(order._id);
-
-        // Clear the cart
-        user.cart = [];
-        await user.save();
-        console.log("User cart cleared, redirecting to success page");
-
-        // Redirect to order success page with order ID
-        res.redirect("/users/order-success/" + order._id);
+        // Redirect to order success page
+        res.redirect("/users/order-success/" + savedOrder._id);
     } catch (err) {
-        console.error("Place order error:", err);
+        console.error("=== PLACE ORDER ERROR ===");
+        console.error("Error name:", err.name);
+        console.error("Error message:", err.message);
+        console.error("Error stack:", err.stack);
+        if (err.errors) {
+            console.error("Validation errors:", JSON.stringify(err.errors));
+        }
         res.redirect("/users/cart?error=" + encodeURIComponent(err.message));
     }
 });
