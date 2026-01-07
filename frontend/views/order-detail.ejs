@@ -121,6 +121,78 @@
                             </p>
                         </div>
                     </div>
+
+                    <!-- Order Tracking Timeline -->
+                    <div class="glass rounded-2xl p-6 stagger-item">
+                        <h3 class="text-lg font-semibold mb-6 flex items-center gap-2">
+                            <i class="ri-map-pin-2-line text-accent"></i>
+                            Tracking Timeline
+                        </h3>
+                        <div class="relative">
+                            <!-- Timeline Line -->
+                            <div class="absolute left-5 top-0 bottom-0 w-1 bg-gradient-to-b from-accent via-purple-500 to-gray-700 rounded-full timeline-progress-line"></div>
+                            
+                            <!-- Timeline Items -->
+                            <div class="space-y-6 relative z-10">
+                                <% 
+                                    const steps = ['pending', 'confirmed', 'processing', 'shipped', 'delivered'];
+                                    const currentStep = steps.indexOf(order.orderStatus);
+                                    const statusMessages = {
+                                        pending: 'Order placed',
+                                        confirmed: 'Order confirmed',
+                                        processing: 'Being prepared',
+                                        shipped: 'On the way',
+                                        delivered: 'Delivered'
+                                    };
+                                    const statusIcons = {
+                                        pending: 'ri-shopping-bag-line',
+                                        confirmed: 'ri-checkbox-circle-fill',
+                                        processing: 'ri-loader-4-line',
+                                        shipped: 'ri-truck-line',
+                                        delivered: 'ri-checkbox-circle-fill'
+                                    };
+                                %>
+                                <% steps.forEach(function(step, index) { 
+                                    const isCompleted = index <= currentStep;
+                                    const isCurrent = order.orderStatus === step;
+                                %>
+                                <div class="flex gap-4 timeline-item" data-step="<%= step %>">
+                                    <!-- Timeline Dot -->
+                                    <div class="flex flex-col items-center">
+                                        <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 border-2 <%= isCompleted ? 'bg-gradient-to-r from-accent to-purple-500 border-accent' : 'bg-dark-card border-dark-border' %> timeline-dot">
+                                            <% if(isCompleted) { %>
+                                                <i class="<%= statusIcons[step] %> text-white"></i>
+                                            <% } else { %>
+                                                <span class="text-gray-500 text-sm"><%= index + 1 %></span>
+                                            <% } %>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Timeline Content -->
+                                    <div class="pt-1 pb-4 flex-1">
+                                        <div class="flex items-center gap-2 mb-1">
+                                            <p class="font-semibold <%= isCompleted ? 'text-white' : 'text-gray-400' %> capitalize">
+                                                <%= statusMessages[step] %>
+                                            </p>
+                                            <% if(isCurrent) { %>
+                                                <span class="px-2 py-0.5 text-xs rounded-full bg-accent/20 text-accent font-medium animate-pulse">Current</span>
+                                            <% } %>
+                                        </div>
+                                        <p class="text-sm text-gray-500 capitalize">
+                                            <% if(isCompleted && index < currentStep) { %>
+                                                Completed on <%= new Date(order.updatedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) %>
+                                            <% } else if(isCurrent) { %>
+                                                <%= new Date(order.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) %>
+                                            <% } else { %>
+                                                Waiting for update
+                                            <% } %>
+                                        </p>
+                                    </div>
+                                </div>
+                                <% }); %>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Order Summary Sidebar -->
@@ -185,6 +257,10 @@
                                 <i class="ri-arrow-left-line"></i>
                                 Back to Orders
                             </a>
+                            <button onclick="window.location.reload()" class="magnetic-btn w-full py-3 rounded-xl bg-accent/20 border border-accent text-accent font-medium hover:bg-accent/30 transition-all flex items-center justify-center gap-2">
+                                <i class="ri-refresh-line"></i>
+                                Refresh Tracking
+                            </button>
                             <button class="magnetic-btn w-full py-3 rounded-xl bg-gradient-to-r from-accent to-purple-500 text-white font-medium hover:shadow-lg hover:shadow-accent/25 transition-all flex items-center justify-center gap-2">
                                 <i class="ri-customer-service-2-line"></i>
                                 Need Help?
@@ -196,7 +272,24 @@
         </div>
     </div>
 
+    <style>
+        .timeline-item:nth-child(1) { animation-delay: 0.1s; }
+        .timeline-item:nth-child(2) { animation-delay: 0.2s; }
+        .timeline-item:nth-child(3) { animation-delay: 0.3s; }
+        .timeline-item:nth-child(4) { animation-delay: 0.4s; }
+        .timeline-item:nth-child(5) { animation-delay: 0.5s; }
+        
+        .order-progress-step {
+            transition: all 0.3s ease;
+        }
+        
+        .order-progress-step:hover {
+            transform: scale(1.1);
+        }
+    </style>
+
     <script>
+        // Animate all stagger items
         gsap.from('.stagger-item', {
             y: 30,
             opacity: 0,
@@ -204,6 +297,43 @@
             stagger: 0.1,
             ease: 'power3.out'
         });
-    </script>
 
-<%- include('./partials/footer') %>
+        // Animate timeline items
+        gsap.from('.timeline-item', {
+            x: -30,
+            opacity: 0,
+            duration: 0.5,
+            stagger: 0.15,
+            ease: 'power3.out',
+            delay: 0.3
+        });
+
+        // Animate timeline dots with bounce
+        gsap.from('.timeline-dot', {
+            scale: 0,
+            opacity: 0,
+            duration: 0.4,
+            stagger: 0.15,
+            ease: 'back.out(1.7)',
+            delay: 0.5
+        });
+
+        // Animate progress bar
+        gsap.from('.timeline-progress-line', {
+            scaleY: 0,
+            transformOrigin: 'top',
+            duration: 1,
+            ease: 'power2.out',
+            delay: 0.2
+        });
+
+        // Animate order progress steps
+        const steps = document.querySelectorAll('.flex.justify-between.relative > div');
+        steps.forEach((step, index) => {
+            gsap.from(step, {
+                y: 20,
+                opacity: 0,
+                duration: 0.4,
+                delay: 0.1 * index,
+                ease: 'power2.out'
+            });

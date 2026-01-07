@@ -23,24 +23,24 @@
             <!-- Orders List -->
             <% if(orders && orders.length > 0) { %>
             <div class="space-y-6">
-                <% orders.forEach(function(order){ %>
-                <div class="glass rounded-2xl overflow-hidden stagger-item">
+                <% orders.forEach(function(order, index){ %>
+                <div class="glass rounded-2xl overflow-hidden stagger-item fade-in-up" style="animation-delay: <%= index * 0.1 %>s">
                     <!-- Order Header -->
-                    <div class="flex flex-wrap items-center justify-between p-6 border-b border-dark-border gap-4">
+                    <div class="flex flex-wrap items-center justify-between p-6 border-b border-dark-border gap-4 order-header-hover">
                         <div class="flex flex-wrap items-center gap-6">
-                            <div>
+                            <div class="animate-fade-in">
                                 <span class="text-sm text-gray-500">Order ID</span>
                                 <p class="font-mono font-medium text-accent"><%= order.orderId %></p>
                             </div>
-                            <div>
+                            <div class="animate-fade-in">
                                 <span class="text-sm text-gray-500">Date</span>
                                 <p class="font-medium"><%= new Date(order.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) %></p>
                             </div>
-                            <div>
+                            <div class="animate-fade-in">
                                 <span class="text-sm text-gray-500">Total</span>
                                 <p class="font-medium gradient-text">₹<%= order.finalAmount %></p>
                             </div>
-                            <div>
+                            <div class="animate-fade-in">
                                 <span class="text-sm text-gray-500">Payment</span>
                                 <p class="font-medium"><%= order.paymentMethod === 'cod' ? 'Cash on Delivery' : 'Online' %></p>
                             </div>
@@ -55,7 +55,7 @@
                             if(order.orderStatus === 'delivered') { statusColor = 'green'; statusIcon = 'ri-checkbox-circle-fill'; }
                             if(order.orderStatus === 'cancelled') { statusColor = 'red'; statusIcon = 'ri-close-circle-fill'; }
                             %>
-                            <span class="px-4 py-2 rounded-full bg-<%= statusColor %>-500/20 text-<%= statusColor %>-400 text-sm font-medium capitalize">
+                            <span class="px-4 py-2 rounded-full bg-<%= statusColor %>-500/20 text-<%= statusColor %>-400 text-sm font-medium capitalize bounce-in">
                                 <i class="<%= statusIcon %> mr-1"></i>
                                 <%= order.orderStatus %>
                             </span>
@@ -64,8 +64,8 @@
                     <!-- Order Items -->
                     <div class="p-6">
                         <div class="space-y-4">
-                            <% order.products.forEach(function(item){ %>
-                            <div class="flex items-center gap-4 p-3 rounded-xl bg-dark-card">
+                            <% order.products.forEach(function(item, itemIndex){ %>
+                            <div class="flex items-center gap-4 p-3 rounded-xl bg-dark-card order-item-card" style="animation-delay: <%= itemIndex * 0.05 %>s">
                                 <div class="w-16 h-16 rounded-xl flex items-center justify-center flex-shrink-0" style="background: <%= item.bgcolor || '#1a1a1a' %>;">
                                     <% if(item.image) { %>
                                     <img class="w-12 h-12 object-contain" 
@@ -114,4 +114,94 @@
         </div>
     </div>
 
-<%- include('./partials/footer') %>
+    <style>
+        .order-header-hover {
+            animation: fadeInDown 0.6s ease-out;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .order-item-card {
+            animation: slideInLeft 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .animate-fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .stagger-item.fade-in-up {
+            animation: fadeInUpStagger 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        @keyframes fadeInUpStagger {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+
+    <script>
+        // Animate orders list
+        gsap.from('.stagger-item', {
+            y: 30,
+            opacity: 0,
+            duration: 0.6,
+            stagger: 0.15,
+            ease: 'power3.out'
+        });
+
+        // Hover animation for order items
+        document.querySelectorAll('.order-item-card').forEach(item => {
+            item.addEventListener('mouseenter', function() {
+                gsap.to(this, {
+                    x: 5,
+                    duration: 0.3,
+                    overwrite: 'auto'
+                });
+            });
+            item.addEventListener('mouseleave', function() {
+                gsap.to(this, {
+                    x: 0,
+                    duration: 0.3,
+                    overwrite: 'auto'
+                });
+            });
+        });
+    </script>
+

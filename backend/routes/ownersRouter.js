@@ -136,10 +136,40 @@ router.get("/order/:id", isOwnerLoggedIn, async function (req, res) {
 router.post("/order/:id/status", isOwnerLoggedIn, async function (req, res) {
     try {
         let { orderStatus } = req.body;
-        await orderModel.findByIdAndUpdate(req.params.id, { orderStatus, updatedAt: Date.now() });
+        await orderModel.findByIdAndUpdate(req.params.id, {
+            orderStatus,
+            updatedAt: Date.now()
+        });
+
+        // Return JSON for AJAX requests
+        if (req.headers['content-type'].includes('application/json') || req.xhr) {
+            return res.json({ success: true, message: "Order status updated" });
+        }
+
         res.redirect("/owners/orders");
     } catch (err) {
+        if (req.headers['content-type'].includes('application/json') || req.xhr) {
+            return res.status(500).json({ success: false, message: err.message });
+        }
         res.redirect("/owners/orders");
+    }
+});
+
+// API: Get order tracking
+router.get("/api/order/:id/track", isOwnerLoggedIn, async function (req, res) {
+    try {
+        let order = await orderModel.findById(req.params.id)
+            .populate("user", "fullname email contact")
+            .populate("products.product", "name price image");
+
+        if (!order) {
+            return res.status(404).json({ success: false, message: "Order not found" });
+        }
+
+        const timeline = getOrderTimeline(order);
+        res.json({ success: true, order, timeline });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
     }
 });
 
@@ -187,5 +217,44 @@ router.post("/product/create", isOwnerLoggedIn, upload.single("image"), async fu
         res.send(err.message);
     }
 });
+
+// Helper function to get order timeline
+function getOrderTimeline(order) {
+    const statuses = ['pending', 'confirmed', 'processing', 'shipped', 'delivered'];
+    const timeline = [];
+
+    const statusMessages = {
+        pending: 'Order placed',
+        confirmed: 'Order confirmed',
+        processing: 'Being prepared',
+        shipped: 'On the way',
+        delivered: 'Delivered'
+    };
+
+    const statusIcons = {
+        pending: 'ri-shopping-bag-line',
+        confirmed: 'ri-checkbox-circle-fill',
+        processing: 'ri-loader-4-line',
+        shipped: 'ri-truck-line',
+        delivered: 'ri-checkbox-circle-fill'
+    };
+
+    statuses.forEach((status, index) => {
+        const isCompleted = statuses.indexOf(order.orderStatus) >= index;
+        const isCurrentStatus = order.orderStatus === status;
+
+        timeline.push({
+            status: status,
+            message: statusMessages[status],
+            icon: statusIcons[status],
+            completed: isCompleted && order.orderStatus !== 'cancelled',
+            current: isCurrentStatus && order.orderStatus !== 'cancelled',
+            cancelled: order.orderStatus === 'cancelled',
+            date: isCompleted ? order.updatedAt : null
+        });
+    });
+
+    return timeline;
+}
 
 module.exports = router;

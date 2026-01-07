@@ -209,12 +209,48 @@ router.get("/profile", isLoggedIn, async function (req, res) {
     }
 });
 
+// Get recent orders (API endpoint)
+router.get("/api/recent-orders", isLoggedIn, async function (req, res) {
+    try {
+        let user = await userModel.findOne({ email: req.user.email });
+        let orders = await orderModel.find({ user: user._id })
+            .populate("products.product")
+            .sort({ createdAt: -1 })
+            .limit(5);
+        res.json({ success: true, orders });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// Get order tracking (API endpoint)
+router.get("/api/order/:orderId/track", isLoggedIn, async function (req, res) {
+    try {
+        let user = await userModel.findOne({ email: req.user.email });
+        let order = await orderModel.findOne({ _id: req.params.orderId, user: user._id })
+            .populate("user", "fullname email")
+            .populate("products.product");
+
+        if (!order) {
+            return res.status(404).json({ success: false, message: "Order not found" });
+        }
+
+        // Get order timeline
+        const timeline = getOrderTimeline(order);
+        res.json({ success: true, order, timeline });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
 // User orders
 router.get("/orders", isLoggedIn, async function (req, res) {
     try {
         let user = await userModel.findOne({ email: req.user.email });
         // Fetch all orders for this user, sorted by newest first
-        let orders = await orderModel.find({ user: user._id }).sort({ createdAt: -1 });
+        let orders = await orderModel.find({ user: user._id })
+            .populate("products.product")
+            .sort({ createdAt: -1 });
         res.render("orders", { orders });
     } catch (err) {
         res.send(err.message);
@@ -237,6 +273,45 @@ router.get("/orders/:orderId", isLoggedIn, async function (req, res) {
         res.send(err.message);
     }
 });
+
+// Helper function to get order timeline
+function getOrderTimeline(order) {
+    const statuses = ['pending', 'confirmed', 'processing', 'shipped', 'delivered'];
+    const timeline = [];
+
+    const statusMessages = {
+        pending: 'Order placed',
+        confirmed: 'Order confirmed',
+        processing: 'Being prepared',
+        shipped: 'On the way',
+        delivered: 'Delivered'
+    };
+
+    const statusIcons = {
+        pending: 'ri-shopping-bag-line',
+        confirmed: 'ri-checkbox-circle-fill',
+        processing: 'ri-loader-4-line',
+        shipped: 'ri-truck-line',
+        delivered: 'ri-checkbox-circle-fill'
+    };
+
+    statuses.forEach((status, index) => {
+        const isCompleted = statuses.indexOf(order.orderStatus) >= index;
+        const isCurrentStatus = order.orderStatus === status;
+
+        timeline.push({
+            status: status,
+            message: statusMessages[status],
+            icon: statusIcons[status],
+            completed: isCompleted && order.orderStatus !== 'cancelled',
+            current: isCurrentStatus && order.orderStatus !== 'cancelled',
+            cancelled: order.orderStatus === 'cancelled',
+            date: isCompleted ? order.updatedAt : null
+        });
+    });
+
+    return timeline;
+}
 
 // User wishlist
 router.get("/wishlist", isLoggedIn, async function (req, res) {
