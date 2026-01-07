@@ -1,5 +1,17 @@
 <%- include('./partials/header') %>
 
+    <!-- Error Toast -->
+    <% if(typeof error !== 'undefined' && error && error.length > 0){ %>
+        <div class="fixed top-24 left-1/2 -translate-x-1/2 z-50 animate-bounce">
+            <div class="glass px-6 py-4 rounded-2xl border border-red-500/30 flex items-center gap-3">
+                <div class="w-8 h-8 rounded-full bg-red-500/20 flex items-center justify-center">
+                    <i class="ri-error-warning-line text-red-400"></i>
+                </div>
+                <span class="text-red-400 font-medium"><%= error %></span>
+            </div>
+        </div>
+    <% } %>
+
     <!-- Admin Login Section -->
     <div class="relative z-10 min-h-screen flex items-center justify-center px-6">
         <div class="max-w-md w-full">
@@ -12,7 +24,7 @@
             </div>
 
             <div class="glass rounded-3xl p-8 card-hover">
-                <form autocomplete="off" action="/create" method="post" class="space-y-5">
+                <form autocomplete="off" action="/owners/login" method="post" class="space-y-5">
                     <div class="relative group">
                         <i class="ri-mail-line absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-accent transition-colors"></i>
                         <input class="w-full bg-dark-card border border-dark-border rounded-xl px-4 py-3.5 pl-12 text-white placeholder-gray-500 focus:border-accent focus:ring-1 focus:ring-accent outline-none transition-all" type="email" placeholder="Admin Email" name="email" required>
@@ -51,6 +63,14 @@
             ease: 'power3.out',
             delay: 0.2
         });
+        
+        // Auto-hide error message
+        setTimeout(() => {
+            const toast = document.querySelector('.animate-bounce');
+            if (toast) {
+                gsap.to(toast, { opacity: 0, y: -20, duration: 0.5, onComplete: () => toast.remove() });
+            }
+        }, 3000);
     </script>
 
 <%- include('./partials/footer') %>
