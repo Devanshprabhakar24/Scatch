@@ -92,13 +92,23 @@ router.get("/test-create-order", async function (req, res) {
     try {
         const mongoose = require("mongoose");
 
+        // First, try to drop any problematic index
+        try {
+            await orderModel.collection.dropIndex('orderId_1');
+            console.log("Dropped orderId_1 index");
+        } catch (e) {
+            console.log("No orderId_1 index to drop");
+        }
+
         // Find first user
         const user = await userModel.findOne();
         if (!user) {
             return res.json({ error: "No users found in database" });
         }
 
-        // Create test order
+        // Create test order with unique orderId
+        const uniqueOrderId = 'TEST' + Date.now() + Math.random().toString(36).substring(2, 8).toUpperCase();
+
         const testOrder = await orderModel.create({
             user: user._id,
             products: [{
@@ -112,7 +122,7 @@ router.get("/test-create-order", async function (req, res) {
             platformFee: 20,
             shippingFee: 0,
             finalAmount: 1019,
-            orderId: 'TEST' + Date.now(),
+            orderId: uniqueOrderId,
             shippingAddress: {
                 fullname: user.fullname || "Test User",
                 phone: "1234567890",
