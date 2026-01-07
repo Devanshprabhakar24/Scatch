@@ -87,6 +87,65 @@ router.get("/debug-orders", async function (req, res) {
     }
 });
 
+// DEBUG: Create test order to verify database works
+router.get("/test-create-order", async function (req, res) {
+    try {
+        const mongoose = require("mongoose");
+        
+        // Find first user
+        const user = await userModel.findOne();
+        if (!user) {
+            return res.json({ error: "No users found in database" });
+        }
+        
+        // Create test order
+        const testOrder = await orderModel.create({
+            user: user._id,
+            products: [{
+                name: "Test Product",
+                price: 999,
+                discount: 0,
+                bgcolor: "#3498db"
+            }],
+            totalAmount: 999,
+            totalDiscount: 0,
+            platformFee: 20,
+            shippingFee: 0,
+            finalAmount: 1019,
+            orderId: 'TEST' + Date.now(),
+            shippingAddress: {
+                fullname: user.fullname || "Test User",
+                phone: "1234567890",
+                address: "Test Address",
+                city: "Test City",
+                state: "Test State",
+                pincode: "123456"
+            },
+            paymentMethod: 'cod',
+            paymentStatus: 'pending',
+            orderStatus: 'confirmed'
+        });
+        
+        res.json({
+            success: true,
+            message: "Test order created!",
+            order: {
+                _id: testOrder._id,
+                orderId: testOrder.orderId,
+                finalAmount: testOrder.finalAmount
+            },
+            dbState: mongoose.connection.readyState
+        });
+    } catch (err) {
+        res.status(500).json({ 
+            success: false,
+            error: err.message, 
+            stack: err.stack,
+            name: err.name
+        });
+    }
+});
+
 // Owner Login Page
 router.get("/login", function (req, res) {
     let error = req.flash("error");
