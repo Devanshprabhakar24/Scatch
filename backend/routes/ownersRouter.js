@@ -92,14 +92,6 @@ router.get("/test-create-order", async function (req, res) {
     try {
         const mongoose = require("mongoose");
 
-        // First, try to drop any problematic index
-        try {
-            await orderModel.collection.dropIndex('orderId_1');
-            console.log("Dropped orderId_1 index");
-        } catch (e) {
-            console.log("No orderId_1 index to drop");
-        }
-
         // Find first user
         const user = await userModel.findOne();
         if (!user) {

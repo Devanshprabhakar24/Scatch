@@ -68,6 +68,7 @@ connectDB().then(() => {
     }
 
     // Sessions with Mongo store
+    const mongoUri = process.env.MONGODB_URI || config.get("MONGODB_URI");
     app.use(session({
         resave: false,
         saveUninitialized: false,
@@ -79,7 +80,7 @@ connectDB().then(() => {
             maxAge: 7 * 24 * 60 * 60 * 1000
         },
         store: MongoStore.create({
-            mongoUrl: `${config.get("MONGODB_URI").replace(/\/+$/, '')}/scatch`,
+            mongoUrl: `${mongoUri.replace(/\/+$/, '')}/scatch`,
             ttl: 14 * 24 * 60 * 60 // 14 days
         })
     }));

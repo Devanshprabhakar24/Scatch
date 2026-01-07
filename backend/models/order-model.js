@@ -84,9 +84,4 @@ orderSchema.pre('save', function (next) {
 
 const Order = mongoose.model("order", orderSchema);
 
-// Drop any old unique index on orderId that might cause issues
-Order.collection.dropIndex('orderId_1').catch(() => {
-    // Index doesn't exist, that's fine
-});
-
 module.exports = Order;

@@ -18,6 +18,24 @@ const connectDB = async () => {
         });
         dbgr("MongoDB connected: " + conn.connection.host);
         console.log("MongoDB connected successfully to:", conn.connection.host);
+
+        // Drop problematic indexes after connection
+        try {
+            const db = conn.connection.db;
+            const collections = await db.listCollections({ name: 'orders' }).toArray();
+            if (collections.length > 0) {
+                const indexes = await db.collection('orders').indexes();
+                const hasOrderIdIndex = indexes.some(idx => idx.name === 'orderId_1');
+                if (hasOrderIdIndex) {
+                    await db.collection('orders').dropIndex('orderId_1');
+                    console.log("Dropped problematic orderId_1 index");
+                }
+            }
+        } catch (indexErr) {
+            // Ignore index errors - collection might not exist yet
+            console.log("Index cleanup:", indexErr.message);
+        }
+
         return conn;
     } catch (err) {
         dbgr(err);
