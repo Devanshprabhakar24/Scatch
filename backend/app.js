@@ -71,7 +71,7 @@ connectDB().then(() => {
     app.use(session({
         resave: false,
         saveUninitialized: false,
-        secret: process.env.EXPRESS_SESSION_SECRET,
+        secret: process.env.SESSION_SECRET,
         cookie: {
             httpOnly: true,
             secure: isProd,
