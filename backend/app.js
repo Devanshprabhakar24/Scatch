@@ -88,10 +88,11 @@ connectDB().then(() => {
     app.use(express.json());
     app.use(express.urlencoded({ extended: true }));
     app.use(cookieParser());
-    app.use(express.static(path.join(__dirname, "public"), {
+    app.use(express.static(path.join(__dirname, "../frontend/public"), {
         maxAge: isProd ? "7d" : 0
     }));
     app.set("view engine", "ejs");
+    app.set("views", path.join(__dirname, "../frontend/views"));
 
     // Routes
     app.use("/", indexRouter);

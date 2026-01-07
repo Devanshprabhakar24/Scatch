@@ -1,0 +1,13 @@
+{
+  "name": "scatch-frontend",
+  "version": "1.0.0",
+  "description": "Frontend for Scatch e-commerce application",
+  "main": "index.html",
+  "scripts": {
+    "dev": "echo 'Frontend development server'",
+    "build": "echo 'Build frontend assets'"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
