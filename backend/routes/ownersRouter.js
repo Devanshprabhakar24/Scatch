@@ -135,13 +135,13 @@ router.get("/test-create-order", async function (req, res) {
         // Find first user
         const user = await userModel.findOne();
         if (!user) {
-            return res.json({ error: "No users found in database" });
+            return res.json({ success: false, error: "No users found in database" });
         }
 
         // Create test order with unique orderId
         const uniqueOrderId = 'TEST' + Date.now() + Math.random().toString(36).substring(2, 8).toUpperCase();
 
-        const testOrder = await orderModel.create({
+        const orderData = {
             user: user._id,
             products: [{
                 name: "Test Product",
@@ -166,9 +166,16 @@ router.get("/test-create-order", async function (req, res) {
             paymentMethod: 'cod',
             paymentStatus: 'pending',
             orderStatus: 'confirmed'
-        });
+        };
 
-        res.json({
+        // Try creating the order and log everything
+        console.log("Attempting to create order with data:", JSON.stringify(orderData, null, 2));
+
+        const testOrder = await orderModel.create(orderData);
+
+        console.log("Order created successfully:", testOrder._id);
+
+        return res.json({
             success: true,
             message: "Test order created!",
             order: {
@@ -179,10 +186,12 @@ router.get("/test-create-order", async function (req, res) {
             dbState: mongoose.connection.readyState
         });
     } catch (err) {
-        res.status(500).json({
+        console.error("Test create order error:", err);
+        // Return 200 so we can see the error in browser
+        return res.json({
             success: false,
             error: err.message,
-            stack: err.stack,
+            stack: err.stack ? err.stack.split('\n').slice(0, 5) : null,
             name: err.name,
             code: err.code
         });
