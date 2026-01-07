@@ -93,16 +93,36 @@ router.get("/product/create", isOwnerLoggedIn, function (req, res) {
 
 router.post("/product/create", isOwnerLoggedIn, upload.single("image"), async function (req, res) {
     try {
-        let { name, price, discount, bgcolor, panelcolor, textcolor } = req.body;
+        let {
+            name, price, discount, bgcolor, panelcolor, textcolor, description, features,
+            inStock, stockQuantity, freeShipping, freeShippingMinOrder,
+            deliveryDays, expressDeliveryDays, returnDays, warrantyYears
+        } = req.body;
+
+        // Parse features from textarea (one per line)
+        let featuresArray = [];
+        if (features && features.trim()) {
+            featuresArray = features.split('\n').map(f => f.trim()).filter(f => f.length > 0);
+        }
 
         let product = await productModel.create({
             image: req.file.buffer,
             name,
             price,
-            discount,
+            discount: discount || 0,
             bgcolor,
             panelcolor,
-            textcolor
+            textcolor,
+            description: description || undefined,
+            features: featuresArray.length > 0 ? featuresArray : undefined,
+            inStock: inStock === 'on' || inStock === true,
+            stockQuantity: stockQuantity || 100,
+            freeShipping: freeShipping === 'on' || freeShipping === true,
+            freeShippingMinOrder: freeShippingMinOrder || 500,
+            deliveryDays: deliveryDays || '5-7',
+            expressDeliveryDays: expressDeliveryDays || '2-3',
+            returnDays: returnDays || 30,
+            warrantyYears: warrantyYears || 1
         });
         req.flash("success", "Product created successfully");
         res.redirect("/owners/admin");

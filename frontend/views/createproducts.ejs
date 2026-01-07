@@ -86,6 +86,76 @@
                                             <input name="discount" type="number" placeholder="Discount (%)" class="w-full bg-dark-card border border-dark-border rounded-xl px-4 py-3.5 pl-12 text-white placeholder-gray-500 focus:border-accent focus:ring-1 focus:ring-accent outline-none transition-all">
                                         </div>
                                     </div>
+                                    <div class="mt-4">
+                                        <label class="block text-sm font-medium text-gray-400 mb-2">Product Description</label>
+                                        <textarea name="description" rows="3" placeholder="Enter product description..." class="w-full bg-dark-card border border-dark-border rounded-xl px-4 py-3.5 text-white placeholder-gray-500 focus:border-accent focus:ring-1 focus:ring-accent outline-none transition-all resize-none"></textarea>
+                                    </div>
+                                    <div class="mt-4">
+                                        <label class="block text-sm font-medium text-gray-400 mb-2">Product Features (one per line)</label>
+                                        <textarea name="features" rows="4" placeholder="Premium quality materials&#10;Ergonomic design for comfort&#10;Water-resistant coating&#10;Multiple compartments" class="w-full bg-dark-card border border-dark-border rounded-xl px-4 py-3.5 text-white placeholder-gray-500 focus:border-accent focus:ring-1 focus:ring-accent outline-none transition-all resize-none"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Stock & Inventory -->
+                            <div>
+                                <h3 class="text-lg font-semibold mb-4 flex items-center gap-2">
+                                    <i class="ri-stack-line text-green-400"></i>
+                                    Stock & Inventory
+                                </h3>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div class="relative group">
+                                        <i class="ri-archive-line absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-accent transition-colors"></i>
+                                        <input name="stockQuantity" type="number" placeholder="Stock Quantity (default: 100)" class="w-full bg-dark-card border border-dark-border rounded-xl px-4 py-3.5 pl-12 text-white placeholder-gray-500 focus:border-accent focus:ring-1 focus:ring-accent outline-none transition-all">
+                                    </div>
+                                    <div class="flex items-center gap-4 px-4 py-3.5 bg-dark-card border border-dark-border rounded-xl">
+                                        <input name="inStock" type="checkbox" checked class="w-5 h-5 accent-accent rounded">
+                                        <label class="text-gray-400">In Stock</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Shipping & Delivery -->
+                            <div>
+                                <h3 class="text-lg font-semibold mb-4 flex items-center gap-2">
+                                    <i class="ri-truck-line text-blue-400"></i>
+                                    Shipping & Delivery
+                                </h3>
+                                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                    <div class="flex items-center gap-4 px-4 py-3.5 bg-dark-card border border-dark-border rounded-xl">
+                                        <input name="freeShipping" type="checkbox" checked class="w-5 h-5 accent-accent rounded">
+                                        <label class="text-gray-400">Free Shipping</label>
+                                    </div>
+                                    <div class="relative group">
+                                        <i class="ri-money-rupee-circle-line absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-accent transition-colors"></i>
+                                        <input name="freeShippingMinOrder" type="number" placeholder="Min Order for Free (₹500)" class="w-full bg-dark-card border border-dark-border rounded-xl px-4 py-3.5 pl-12 text-white placeholder-gray-500 focus:border-accent focus:ring-1 focus:ring-accent outline-none transition-all">
+                                    </div>
+                                    <div class="relative group">
+                                        <i class="ri-time-line absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-accent transition-colors"></i>
+                                        <input name="deliveryDays" type="text" placeholder="Delivery Days (5-7)" class="w-full bg-dark-card border border-dark-border rounded-xl px-4 py-3.5 pl-12 text-white placeholder-gray-500 focus:border-accent focus:ring-1 focus:ring-accent outline-none transition-all">
+                                    </div>
+                                    <div class="relative group">
+                                        <i class="ri-flashlight-line absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-accent transition-colors"></i>
+                                        <input name="expressDeliveryDays" type="text" placeholder="Express Days (2-3)" class="w-full bg-dark-card border border-dark-border rounded-xl px-4 py-3.5 pl-12 text-white placeholder-gray-500 focus:border-accent focus:ring-1 focus:ring-accent outline-none transition-all">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Warranty & Returns -->
+                            <div>
+                                <h3 class="text-lg font-semibold mb-4 flex items-center gap-2">
+                                    <i class="ri-shield-check-line text-orange-400"></i>
+                                    Warranty & Returns
+                                </h3>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div class="relative group">
+                                        <i class="ri-shield-star-line absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-accent transition-colors"></i>
+                                        <input name="warrantyYears" type="number" placeholder="Warranty (Years, default: 1)" class="w-full bg-dark-card border border-dark-border rounded-xl px-4 py-3.5 pl-12 text-white placeholder-gray-500 focus:border-accent focus:ring-1 focus:ring-accent outline-none transition-all">
+                                    </div>
+                                    <div class="relative group">
+                                        <i class="ri-exchange-line absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-accent transition-colors"></i>
+                                        <input name="returnDays" type="number" placeholder="Return Days (default: 30)" class="w-full bg-dark-card border border-dark-border rounded-xl px-4 py-3.5 pl-12 text-white placeholder-gray-500 focus:border-accent focus:ring-1 focus:ring-accent outline-none transition-all">
+                                    </div>
                                 </div>
                             </div>
 
