@@ -79,7 +79,7 @@ connectDB().then(() => {
             maxAge: 7 * 24 * 60 * 60 * 1000
         },
         store: MongoStore.create({
-            mongoUrl: `${config.get("MONGODB_URI")}/scatch`,
+            mongoUrl: `${config.get("MONGODB_URI").replace(/\/+$/, '')}/scatch`,
             ttl: 14 * 24 * 60 * 60 // 14 days
         })
     }));
