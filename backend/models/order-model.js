@@ -61,9 +61,7 @@ const orderSchema = mongoose.Schema({
         default: 'pending'
     },
     orderId: {
-        type: String,
-        unique: true,
-        sparse: true
+        type: String
     },
     createdAt: {
         type: Date,

@@ -155,68 +155,39 @@ router.get("/checkout", isLoggedIn, async function (req, res) {
 // Place order
 router.post("/place-order", isLoggedIn, async function (req, res) {
     try {
-        console.log("=== PLACE ORDER START ===");
-        console.log("User email:", req.user?.email);
-        console.log("Request body:", JSON.stringify(req.body));
-
-        if (!req.user || !req.user.email) {
-            console.log("ERROR: No user in request");
-            return res.redirect("/?error=Please login to place an order");
+        // Get user
+        const user = await userModel.findOne({ email: req.user.email });
+        if (!user || !user.cart || user.cart.length === 0) {
+            return res.redirect("/users/cart?error=Cart is empty");
         }
 
-        let user = await userModel.findOne({ email: req.user.email });
-
-        if (!user) {
-            console.log("ERROR: User not found in database");
-            return res.redirect("/?error=User not found");
-        }
-
-        console.log("User found:", user._id);
-
-        if (!user.cart || user.cart.length === 0) {
-            console.log("ERROR: Cart is empty");
-            return res.redirect("/users/cart?error=Your cart is empty");
-        }
-
-        console.log("Cart items count:", user.cart.length);
-
-        // Fetch products from cart
-        let cartProducts = await productModel.find({ _id: { $in: user.cart } });
-
-        if (!cartProducts || cartProducts.length === 0) {
-            console.log("ERROR: No products found for cart items");
+        // Get cart products
+        const cartProducts = await productModel.find({ _id: { $in: user.cart } });
+        if (!cartProducts.length) {
             return res.redirect("/users/cart?error=Products not found");
         }
-
-        console.log("Products found count:", cartProducts.length);
 
         // Calculate totals
         let totalPrice = 0;
         let totalDiscount = 0;
-        cartProducts.forEach(product => {
-            totalPrice += product.price || 0;
-            totalDiscount += product.discount || 0;
+        cartProducts.forEach(p => {
+            totalPrice += p.price || 0;
+            totalDiscount += p.discount || 0;
         });
-
         const finalAmount = totalPrice - totalDiscount + 20;
-        console.log("Totals - Price:", totalPrice, "Discount:", totalDiscount, "Final:", finalAmount);
 
-        // Create order products array with details
-        const orderProducts = cartProducts.map(product => ({
-            product: product._id,
-            name: product.name,
-            price: product.price,
-            discount: product.discount || 0,
-            image: product.image,
-            bgcolor: product.bgcolor
+        // Create order products
+        const orderProducts = cartProducts.map(p => ({
+            product: p._id,
+            name: p.name,
+            price: p.price,
+            discount: p.discount || 0,
+            image: p.image,
+            bgcolor: p.bgcolor
         }));
 
-        // Generate order ID
-        const orderId = 'ORD' + Date.now() + Math.random().toString(36).substring(2, 7).toUpperCase();
-        console.log("Generated orderId:", orderId);
-
-        // Prepare order data
-        const orderData = {
+        // Create and save order
+        const order = new orderModel({
             user: user._id,
             products: orderProducts,
             totalAmount: totalPrice,
@@ -224,49 +195,31 @@ router.post("/place-order", isLoggedIn, async function (req, res) {
             platformFee: 20,
             shippingFee: 0,
             finalAmount: finalAmount,
-            orderId: orderId,
             shippingAddress: {
                 fullname: req.body.fullname || user.fullname || 'Customer',
-                phone: req.body.phone || (user.contact ? String(user.contact) : '0000000000'),
-                address: req.body.address || 'Not provided',
-                city: req.body.city || 'Not provided',
-                state: req.body.state || 'Not provided',
-                pincode: req.body.pincode || '000000'
+                phone: req.body.phone || String(user.contact || ''),
+                address: req.body.address || '',
+                city: req.body.city || '',
+                state: req.body.state || '',
+                pincode: req.body.pincode || ''
             },
             paymentMethod: req.body.paymentMethod || 'cod',
             paymentStatus: 'pending',
             orderStatus: 'confirmed'
-        };
-
-        console.log("Order data prepared, creating order...");
-
-        // Create the order
-        const order = new orderModel(orderData);
-        const savedOrder = await order.save();
-
-        console.log("=== ORDER SAVED SUCCESSFULLY ===");
-        console.log("Order _id:", savedOrder._id);
-        console.log("Order orderId:", savedOrder.orderId);
-
-        // Update user - add order and clear cart
-        await userModel.findByIdAndUpdate(user._id, {
-            $push: { orders: savedOrder._id },
-            $set: { cart: [] }
         });
 
-        console.log("User updated, cart cleared");
-        console.log("=== PLACE ORDER END - SUCCESS ===");
+        await order.save();
+        console.log("Order saved:", order._id, order.orderId);
 
-        // Redirect to order success page
-        res.redirect("/users/order-success/" + savedOrder._id);
+        // Clear cart
+        user.cart = [];
+        if (!user.orders) user.orders = [];
+        user.orders.push(order._id);
+        await user.save();
+
+        res.redirect("/users/order-success/" + order._id);
     } catch (err) {
-        console.error("=== PLACE ORDER ERROR ===");
-        console.error("Error name:", err.name);
-        console.error("Error message:", err.message);
-        console.error("Error stack:", err.stack);
-        if (err.errors) {
-            console.error("Validation errors:", JSON.stringify(err.errors));
-        }
+        console.error("Place order error:", err);
         res.redirect("/users/cart?error=" + encodeURIComponent(err.message));
     }
 });
