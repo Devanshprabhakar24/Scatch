@@ -55,6 +55,38 @@ function isOwnerLoggedIn(req, res, next) {
     res.redirect("/owners/login");
 }
 
+// DEBUG: Test orders in database (remove in production)
+router.get("/debug-orders", async function (req, res) {
+    try {
+        const mongoose = require("mongoose");
+        const connState = mongoose.connection.readyState;
+        const stateNames = ['disconnected', 'connected', 'connecting', 'disconnecting'];
+
+        const orders = await orderModel.find().lean();
+        const users = await userModel.find().select("fullname email orders cart").lean();
+
+        res.json({
+            dbConnection: stateNames[connState],
+            orderCount: orders.length,
+            orders: orders.map(o => ({
+                _id: o._id,
+                orderId: o.orderId,
+                status: o.orderStatus,
+                finalAmount: o.finalAmount,
+                createdAt: o.createdAt
+            })),
+            users: users.map(u => ({
+                fullname: u.fullname,
+                email: u.email,
+                cartItems: u.cart?.length || 0,
+                ordersCount: u.orders?.length || 0
+            }))
+        });
+    } catch (err) {
+        res.status(500).json({ error: err.message, stack: err.stack });
+    }
+});
+
 // Owner Login Page
 router.get("/login", function (req, res) {
     let error = req.flash("error");

@@ -155,17 +155,25 @@ router.get("/checkout", isLoggedIn, async function (req, res) {
 // Place order
 router.post("/place-order", isLoggedIn, async function (req, res) {
     try {
+        console.log("[ORDER] Starting order placement...");
+
         // Get user
         const user = await userModel.findOne({ email: req.user.email });
         if (!user || !user.cart || user.cart.length === 0) {
+            console.log("[ORDER] Cart is empty");
             return res.redirect("/users/cart?error=Cart is empty");
         }
+
+        console.log("[ORDER] User found, cart items:", user.cart.length);
 
         // Get cart products
         const cartProducts = await productModel.find({ _id: { $in: user.cart } });
         if (!cartProducts.length) {
+            console.log("[ORDER] Products not found");
             return res.redirect("/users/cart?error=Products not found");
         }
+
+        console.log("[ORDER] Products found:", cartProducts.length);
 
         // Calculate totals
         let totalPrice = 0;
@@ -176,18 +184,22 @@ router.post("/place-order", isLoggedIn, async function (req, res) {
         });
         const finalAmount = totalPrice - totalDiscount + 20;
 
-        // Create order products
+        console.log("[ORDER] Totals calculated - Final:", finalAmount);
+
+        // Create order products (without image to reduce size)
         const orderProducts = cartProducts.map(p => ({
             product: p._id,
             name: p.name,
             price: p.price,
             discount: p.discount || 0,
-            image: p.image,
             bgcolor: p.bgcolor
         }));
 
-        // Create and save order
-        const order = new orderModel({
+        // Generate orderId
+        const orderId = 'ORD' + Date.now() + Math.random().toString(36).substring(2, 6).toUpperCase();
+
+        // Create order document
+        const orderData = {
             user: user._id,
             products: orderProducts,
             totalAmount: totalPrice,
@@ -195,6 +207,7 @@ router.post("/place-order", isLoggedIn, async function (req, res) {
             platformFee: 20,
             shippingFee: 0,
             finalAmount: finalAmount,
+            orderId: orderId,
             shippingAddress: {
                 fullname: req.body.fullname || user.fullname || 'Customer',
                 phone: req.body.phone || String(user.contact || ''),
@@ -206,18 +219,24 @@ router.post("/place-order", isLoggedIn, async function (req, res) {
             paymentMethod: req.body.paymentMethod || 'cod',
             paymentStatus: 'pending',
             orderStatus: 'confirmed'
-        });
+        };
 
-        await order.save();
-        console.log("Order saved:", order._id, order.orderId);
+        console.log("[ORDER] Creating order with orderId:", orderId);
 
-        // Clear cart
+        // Save order using create() for reliability
+        const savedOrder = await orderModel.create(orderData);
+
+        console.log("[ORDER] Order saved successfully! _id:", savedOrder._id);
+
+        // Clear cart and add order to user
         user.cart = [];
         if (!user.orders) user.orders = [];
-        user.orders.push(order._id);
+        user.orders.push(savedOrder._id);
         await user.save();
 
-        res.redirect("/users/order-success/" + order._id);
+        console.log("[ORDER] User updated, cart cleared");
+
+        res.redirect("/users/order-success/" + savedOrder._id);
     } catch (err) {
         console.error("Place order error:", err);
         res.redirect("/users/cart?error=" + encodeURIComponent(err.message));

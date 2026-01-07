@@ -4,11 +4,14 @@ const dbgr = require("debug")("development:mongoose");
 
 const connectDB = async () => {
     try {
-        mongoose.set('bufferCommands', false); // Disable buffering to fail fast if not connected
         const baseUri = config.get("MONGODB_URI").replace(/\/+$/, ''); // Remove trailing slashes
-        const conn = await mongoose.connect(`${baseUri}/scatch`);
+        const conn = await mongoose.connect(`${baseUri}/scatch`, {
+            serverSelectionTimeoutMS: 10000,
+            socketTimeoutMS: 45000,
+        });
         dbgr("MongoDB connected: " + conn.connection.host);
-        console.log("MongoDB connected successfully");
+        console.log("MongoDB connected successfully to:", conn.connection.host);
+        return conn;
     } catch (err) {
         dbgr(err);
         console.error("MongoDB connection error:", err.message);
