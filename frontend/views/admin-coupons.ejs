@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coupon Management - Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+    <%- include('partials/admin-header') %>
+    
+    <div class="max-w-7xl mx-auto px-4 py-8">
+        <div class="flex justify-between items-center mb-8">
+            <h1 class="text-3xl font-bold text-gray-800">Coupon Management</h1>
+            <button onclick="openCreateModal()" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
+                <i class="ri-add-line mr-2"></i>Create Coupon
+            </button>
+        </div>
+        
+        <!-- Coupons Table -->
+        <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+            <table class="w-full">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-600">Code</th>
+                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-600">Discount</th>
+                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-600">Min Order</th>
+                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-600">Usage</th>
+                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-600">Expiry</th>
+                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-600">Status</th>
+                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-600">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (coupons.length === 0) { %>
+                    <tr>
+                        <td colspan="7" class="px-6 py-8 text-center text-gray-500">No coupons found. Create your first coupon!</td>
+                    </tr>
+                    <% } %>
+                    <% coupons.forEach(coupon => { %>
+                    <tr class="border-t">
+                        <td class="px-6 py-4">
+                            <span class="font-mono font-bold text-blue-600"><%= coupon.code %></span>
+                        </td>
+                        <td class="px-6 py-4">
+                            <% if (coupon.discountType === 'percentage') { %>
+                                <span class="font-medium"><%= coupon.discountValue %>%</span>
+                                <% if (coupon.maxDiscountAmount) { %>
+                                    <span class="text-gray-500 text-sm">(max ₹<%= coupon.maxDiscountAmount %>)</span>
+                                <% } %>
+                            <% } else { %>
+                                <span class="font-medium">₹<%= coupon.discountValue %></span>
+                            <% } %>
+                        </td>
+                        <td class="px-6 py-4">₹<%= coupon.minimumOrderAmount %></td>
+                        <td class="px-6 py-4">
+                            <%= coupon.usedCount %>
+                            <% if (coupon.usageLimit) { %>
+                                / <%= coupon.usageLimit %>
+                            <% } %>
+                        </td>
+                        <td class="px-6 py-4">
+                            <% const expiry = new Date(coupon.expiryDate); %>
+                            <% const isExpired = expiry < new Date(); %>
+                            <span class="<%= isExpired ? 'text-red-500' : '' %>">
+                                <%= expiry.toLocaleDateString() %>
+                            </span>
+                        </td>
+                        <td class="px-6 py-4">
+                            <% if (!coupon.isActive) { %>
+                                <span class="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm">Inactive</span>
+                            <% } else if (new Date(coupon.expiryDate) < new Date()) { %>
+                                <span class="px-3 py-1 bg-red-100 text-red-600 rounded-full text-sm">Expired</span>
+                            <% } else { %>
+                                <span class="px-3 py-1 bg-green-100 text-green-600 rounded-full text-sm">Active</span>
+                            <% } %>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="flex gap-2">
+                                <button onclick="toggleCoupon('<%= coupon._id %>')" 
+                                    class="p-2 hover:bg-gray-100 rounded-lg" title="Toggle Active">
+                                    <i class="ri-toggle-<%= coupon.isActive ? 'fill text-green-500' : 'line text-gray-400' %>"></i>
+                                </button>
+                                <button onclick="deleteCoupon('<%= coupon._id %>')" 
+                                    class="p-2 hover:bg-red-100 rounded-lg text-red-500" title="Delete">
+                                    <i class="ri-delete-bin-line"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <!-- Create Coupon Modal -->
+    <div id="createModal" class="fixed inset-0 bg-black/50 flex items-center justify-center hidden z-50">
+        <div class="bg-white rounded-xl p-6 w-full max-w-md mx-4">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-bold">Create Coupon</h2>
+                <button onclick="closeCreateModal()" class="p-2 hover:bg-gray-100 rounded-full">
+                    <i class="ri-close-line text-xl"></i>
+                </button>
+            </div>
+            
+            <form id="createForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Coupon Code</label>
+                    <input type="text" name="code" required 
+                        class="w-full px-4 py-2 border rounded-lg uppercase" placeholder="e.g., SAVE20">
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Discount Type</label>
+                        <select name="discountType" class="w-full px-4 py-2 border rounded-lg">
+                            <option value="percentage">Percentage (%)</option>
+                            <option value="fixed">Fixed Amount (₹)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Discount Value</label>
+                        <input type="number" name="discountValue" required min="1"
+                            class="w-full px-4 py-2 border rounded-lg" placeholder="e.g., 20">
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Min Order Amount</label>
+                        <input type="number" name="minimumOrderAmount" min="0" value="0"
+                            class="w-full px-4 py-2 border rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Max Discount (₹)</label>
+                        <input type="number" name="maxDiscountAmount" min="0"
+                            class="w-full px-4 py-2 border rounded-lg" placeholder="Optional">
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Expiry Date</label>
+                        <input type="date" name="expiryDate" required
+                            class="w-full px-4 py-2 border rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Usage Limit</label>
+                        <input type="number" name="usageLimit" min="1"
+                            class="w-full px-4 py-2 border rounded-lg" placeholder="Unlimited">
+                    </div>
+                </div>
+                
+                <button type="submit" class="w-full py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 font-medium">
+                    Create Coupon
+                </button>
+            </form>
+        </div>
+    </div>
+    
+    <script>
+        function openCreateModal() {
+            document.getElementById('createModal').classList.remove('hidden');
+            // Set min date to today
+            document.querySelector('input[name="expiryDate"]').min = new Date().toISOString().split('T')[0];
+        }
+        
+        function closeCreateModal() {
+            document.getElementById('createModal').classList.add('hidden');
+            document.getElementById('createForm').reset();
+        }
+        
+        document.getElementById('createForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData);
+            
+            try {
+                const res = await fetch('/owners/coupon/create', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await res.json();
+                if (result.success) {
+                    location.reload();
+                } else {
+                    alert(result.error || 'Error creating coupon');
+                }
+            } catch (err) {
+                alert('Error creating coupon');
+            }
+        });
+        
+        async function toggleCoupon(id) {
+            try {
+                const res = await fetch(`/owners/coupon/toggle/${id}`, { method: 'POST' });
+                const data = await res.json();
+                if (data.success) {
+                    location.reload();
+                }
+            } catch (err) {
+                alert('Error toggling coupon');
+            }
+        }
+        
+        async function deleteCoupon(id) {
+            if (!confirm('Are you sure you want to delete this coupon?')) return;
+            
+            try {
+                const res = await fetch(`/owners/coupon/delete/${id}`, { method: 'POST' });
+                const data = await res.json();
+                if (data.success) {
+                    location.reload();
+                }
+            } catch (err) {
+                alert('Error deleting coupon');
+            }
+        }
+    </script>
+</body>
+</html>

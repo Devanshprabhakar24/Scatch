@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory Management - Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+    <%- include('partials/admin-header') %>
+    
+    <div class="max-w-7xl mx-auto px-4 py-8">
+        <div class="flex justify-between items-center mb-8">
+            <h1 class="text-3xl font-bold text-gray-800">Inventory Management</h1>
+            <div class="flex gap-4">
+                <input type="text" id="searchInput" placeholder="Search products..." 
+                    class="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                <select id="filterStock" class="px-4 py-2 border rounded-lg">
+                    <option value="all">All Products</option>
+                    <option value="low">Low Stock (&lt;10)</option>
+                    <option value="out">Out of Stock</option>
+                    <option value="in">In Stock</option>
+                </select>
+            </div>
+        </div>
+        
+        <!-- Low Stock Alert -->
+        <% if (lowStockProducts.length > 0) { %>
+        <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mb-6">
+            <div class="flex items-center gap-2 text-yellow-800 font-medium mb-2">
+                <i class="ri-alert-line text-xl"></i>
+                <span>Low Stock Alert</span>
+            </div>
+            <p class="text-yellow-700"><%= lowStockProducts.length %> product(s) running low on stock!</p>
+        </div>
+        <% } %>
+        
+        <!-- Inventory Table -->
+        <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+            <table class="w-full">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-600">Product</th>
+                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-600">Category</th>
+                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-600">Price</th>
+                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-600">Stock</th>
+                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-600">Sold</th>
+                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-600">Status</th>
+                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-600">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="inventoryBody">
+                    <% products.forEach(product => { %>
+                    <tr class="border-t product-row" data-stock="<%= product.stockQuantity %>" data-in-stock="<%= product.inStock %>">
+                        <td class="px-6 py-4">
+                            <span class="font-medium"><%= product.name %></span>
+                        </td>
+                        <td class="px-6 py-4 text-gray-600 capitalize"><%= product.category || 'Uncategorized' %></td>
+                        <td class="px-6 py-4 font-medium">₹<%= product.price %></td>
+                        <td class="px-6 py-4">
+                            <input type="number" value="<%= product.stockQuantity %>" min="0"
+                                class="w-20 px-2 py-1 border rounded stock-input" 
+                                data-product-id="<%= product._id %>"
+                                data-original="<%= product.stockQuantity %>">
+                        </td>
+                        <td class="px-6 py-4 text-gray-600"><%= product.soldCount || 0 %></td>
+                        <td class="px-6 py-4">
+                            <% if (!product.inStock || product.stockQuantity === 0) { %>
+                                <span class="px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm">Out of Stock</span>
+                            <% } else if (product.stockQuantity < 10) { %>
+                                <span class="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-sm">Low Stock</span>
+                            <% } else { %>
+                                <span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm">In Stock</span>
+                            <% } %>
+                        </td>
+                        <td class="px-6 py-4">
+                            <button onclick="updateStock('<%= product._id %>')" 
+                                class="px-3 py-1 bg-blue-500 text-white rounded-lg hover:bg-blue-600 text-sm update-btn"
+                                data-product-id="<%= product._id %>" style="display: none;">
+                                Update
+                            </button>
+                        </td>
+                    </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Bulk Actions -->
+        <div class="mt-6 flex justify-end">
+            <button onclick="bulkUpdate()" id="bulkUpdateBtn" 
+                class="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 hidden">
+                <i class="ri-save-line mr-2"></i>Save All Changes
+            </button>
+        </div>
+    </div>
+    
+    <script>
+        const stockInputs = document.querySelectorAll('.stock-input');
+        const bulkUpdateBtn = document.getElementById('bulkUpdateBtn');
+        
+        stockInputs.forEach(input => {
+            input.addEventListener('change', function() {
+                const productId = this.dataset.productId;
+                const original = this.dataset.original;
+                const updateBtn = document.querySelector(`.update-btn[data-product-id="${productId}"]`);
+                
+                if (this.value !== original) {
+                    updateBtn.style.display = 'inline-block';
+                    bulkUpdateBtn.classList.remove('hidden');
+                } else {
+                    updateBtn.style.display = 'none';
+                }
+            });
+        });
+        
+        async function updateStock(productId) {
+            const input = document.querySelector(`.stock-input[data-product-id="${productId}"]`);
+            const stock = input.value;
+            
+            try {
+                const res = await fetch(`/owners/inventory/update/${productId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ stockQuantity: stock, inStock: stock > 0 })
+                });
+                
+                const data = await res.json();
+                if (data.success) {
+                    input.dataset.original = stock;
+                    document.querySelector(`.update-btn[data-product-id="${productId}"]`).style.display = 'none';
+                    location.reload();
+                }
+            } catch (err) {
+                alert('Error updating stock');
+            }
+        }
+        
+        async function bulkUpdate() {
+            const updates = [];
+            stockInputs.forEach(input => {
+                if (input.value !== input.dataset.original) {
+                    updates.push({
+                        productId: input.dataset.productId,
+                        stockQuantity: parseInt(input.value)
+                    });
+                }
+            });
+            
+            if (updates.length === 0) return;
+            
+            try {
+                const res = await fetch('/owners/inventory/bulk-update', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ updates })
+                });
+                
+                const data = await res.json();
+                if (data.success) {
+                    location.reload();
+                }
+            } catch (err) {
+                alert('Error updating stock');
+            }
+        }
+        
+        // Filter functionality
+        document.getElementById('filterStock').addEventListener('change', function() {
+            const filter = this.value;
+            document.querySelectorAll('.product-row').forEach(row => {
+                const stock = parseInt(row.dataset.stock);
+                const inStock = row.dataset.inStock === 'true';
+                
+                let show = true;
+                if (filter === 'low') show = stock < 10 && stock > 0;
+                else if (filter === 'out') show = stock === 0 || !inStock;
+                else if (filter === 'in') show = stock >= 10 && inStock;
+                
+                row.style.display = show ? '' : 'none';
+            });
+        });
+        
+        // Search functionality
+        document.getElementById('searchInput').addEventListener('input', function() {
+            const search = this.value.toLowerCase();
+            document.querySelectorAll('.product-row').forEach(row => {
+                const name = row.querySelector('td:first-child').textContent.toLowerCase();
+                row.style.display = name.includes(search) ? '' : 'none';
+            });
+        });
+    </script>
+</body>
+</html>

@@ -13,6 +13,15 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
     <script>
+        // Theme initialization - runs before page renders to prevent flash
+        (function() {
+            const savedTheme = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const theme = savedTheme || (prefersDark ? 'dark' : 'light');
+            document.documentElement.setAttribute('data-theme', theme);
+        })();
+    </script>
+    <script>
         tailwind.config = {
             theme: {
                 extend: {
@@ -21,9 +30,9 @@
                         'inter': ['Inter', 'sans-serif'],
                     },
                     colors: {
-                        'dark': '#0a0a0a',
-                        'dark-card': '#141414',
-                        'dark-border': '#262626',
+                        'dark': 'var(--bg-primary)',
+                        'dark-card': 'var(--bg-card)',
+                        'dark-border': 'var(--border-color)',
                         'accent': '#6366f1',
                         'accent-light': '#818cf8',
                     }
@@ -32,19 +41,50 @@
         }
     </script>
     <style>
+        /* Theme CSS Variables */
+        :root {
+            --bg-primary: #0a0a0a;
+            --bg-card: #141414;
+            --bg-secondary: #1a1a1a;
+            --border-color: #262626;
+            --text-primary: #ffffff;
+            --text-secondary: #9ca3af;
+            --text-muted: #6b7280;
+            --glass-bg: rgba(20, 20, 20, 0.8);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --scrollbar-track: #0a0a0a;
+            --scrollbar-thumb: #6366f1;
+            --input-bg: #141414;
+        }
+
+        [data-theme="light"] {
+            --bg-primary: #f8fafc;
+            --bg-card: #ffffff;
+            --bg-secondary: #f1f5f9;
+            --border-color: #e2e8f0;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #94a3b8;
+            --glass-bg: rgba(255, 255, 255, 0.8);
+            --glass-border: rgba(0, 0, 0, 0.1);
+            --scrollbar-track: #f1f5f9;
+            --scrollbar-thumb: #6366f1;
+            --input-bg: #ffffff;
+        }
+
         * {
             scrollbar-width: thin;
-            scrollbar-color: #6366f1 #0a0a0a;
+            scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
         }
         *::-webkit-scrollbar { width: 8px; }
-        *::-webkit-scrollbar-track { background: #0a0a0a; }
-        *::-webkit-scrollbar-thumb { background: #6366f1; border-radius: 4px; }
+        *::-webkit-scrollbar-track { background: var(--scrollbar-track); }
+        *::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 4px; }
         
         .glass {
-            background: rgba(20, 20, 20, 0.8);
+            background: var(--glass-bg);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--glass-border);
         }
         
         .gradient-text {
@@ -183,15 +223,90 @@
                 box-shadow: 0 0 25px rgba(99, 102, 241, 0.6);
             }
         }
+
+        /* Theme transition */
+        body, .glass, .bg-dark, .bg-dark-card, .text-white, .text-gray-300, .text-gray-400 {
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+        }
+
+        /* Theme toggle button */
+        .theme-toggle {
+            position: relative;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle .sun-icon,
+        .theme-toggle .moon-icon {
+            position: absolute;
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle .sun-icon {
+            opacity: 0;
+            transform: rotate(-90deg) scale(0);
+        }
+
+        .theme-toggle .moon-icon {
+            opacity: 1;
+            transform: rotate(0) scale(1);
+        }
+
+        [data-theme="light"] .theme-toggle .sun-icon {
+            opacity: 1;
+            transform: rotate(0) scale(1);
+        }
+
+        [data-theme="light"] .theme-toggle .moon-icon {
+            opacity: 0;
+            transform: rotate(90deg) scale(0);
+        }
+
+        /* Light theme text color overrides */
+        [data-theme="light"] .text-white {
+            color: var(--text-primary);
+        }
+
+        [data-theme="light"] .text-gray-300,
+        [data-theme="light"] .text-gray-400 {
+            color: var(--text-secondary);
+        }
+
+        [data-theme="light"] .text-gray-500 {
+            color: var(--text-muted);
+        }
+
+        /* Animated background blobs for light theme */
+        .bg-blob {
+            transition: background-color 0.3s ease;
+        }
+
+        [data-theme="light"] .bg-blob-purple {
+            background-color: rgba(168, 85, 247, 0.15);
+        }
+
+        [data-theme="light"] .bg-blob-indigo {
+            background-color: rgba(99, 102, 241, 0.15);
+        }
+
+        [data-theme="light"] .bg-blob-pink {
+            background-color: rgba(236, 72, 153, 0.08);
+        }
     </style>
 </head>
 
-<body class="font-inter bg-dark text-white min-h-screen">
+<body class="font-inter bg-dark min-h-screen" style="color: var(--text-primary);">
     <!-- Animated Background -->
     <div class="fixed inset-0 overflow-hidden pointer-events-none z-0">
-        <div class="absolute top-1/4 -left-20 w-72 h-72 bg-purple-500/20 rounded-full blur-[100px] animate-float"></div>
-        <div class="absolute bottom-1/4 -right-20 w-96 h-96 bg-indigo-500/20 rounded-full blur-[120px] animate-float" style="animation-delay: -3s;"></div>
-        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-pink-500/10 rounded-full blur-[150px]"></div>
+        <div class="bg-blob bg-blob-purple absolute top-1/4 -left-20 w-72 h-72 bg-purple-500/20 rounded-full blur-[100px] animate-float"></div>
+        <div class="bg-blob bg-blob-indigo absolute bottom-1/4 -right-20 w-96 h-96 bg-indigo-500/20 rounded-full blur-[120px] animate-float" style="animation-delay: -3s;"></div>
+        <div class="bg-blob bg-blob-pink absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-pink-500/10 rounded-full blur-[150px]"></div>
     </div>
 
     <!-- Admin Navigation -->
@@ -201,16 +316,24 @@
                 <a href="/owners/admin" class="text-2xl font-space font-bold gradient-text tracking-tight">Scatch Admin</a>
                 <div class="hidden md:flex gap-6 items-center">
                     <a href="/owners/admin" class="nav-link text-gray-300 hover:text-white transition-colors font-medium flex items-center gap-2">
-                        <i class="ri-shopping-bag-line"></i> My Products
-                    </a>
-                    <a href="/owners/users" class="nav-link text-gray-300 hover:text-white transition-colors font-medium flex items-center gap-2">
-                        <i class="ri-user-line"></i> All Users
+                        <i class="ri-shopping-bag-line"></i> Products
                     </a>
                     <a href="/owners/orders" class="nav-link text-gray-300 hover:text-white transition-colors font-medium flex items-center gap-2">
-                        <i class="ri-file-list-3-line"></i> All Orders
+                        <i class="ri-file-list-3-line"></i> Orders
+                    </a>
+                    <a href="/owners/users" class="nav-link text-gray-300 hover:text-white transition-colors font-medium flex items-center gap-2">
+                        <i class="ri-user-line"></i> Customers
+                    </a>
+                    <a href="/owners/analytics" class="nav-link text-gray-300 hover:text-white transition-colors font-medium flex items-center gap-2">
+                        <i class="ri-line-chart-line"></i> Analytics
                     </a>
                 </div>
                 <div class="flex gap-4 items-center">
+                    <!-- Theme Toggle -->
+                    <button onclick="toggleTheme()" class="theme-toggle w-10 h-10 rounded-full bg-dark-card border border-dark-border hover:border-accent transition-all duration-300" title="Toggle theme">
+                        <i class="sun-icon ri-sun-line text-yellow-400"></i>
+                        <i class="moon-icon ri-moon-line text-gray-300"></i>
+                    </button>
                     <!-- Create Product -->
                     <a href="/owners/product/create" class="magnetic-btn px-4 py-2 rounded-xl bg-gradient-to-r from-accent to-purple-500 text-white font-medium text-sm hover:shadow-lg hover:shadow-accent/25 transition-all duration-300 flex items-center gap-2">
                         <i class="ri-add-line"></i>
@@ -225,11 +348,24 @@
                             <a href="/owners/admin" class="flex items-center gap-2 px-4 py-2.5 rounded-lg hover:bg-dark-card transition-all text-sm">
                                 <i class="ri-dashboard-line text-accent"></i> Dashboard
                             </a>
-                            <a href="/owners/users" class="flex items-center gap-2 px-4 py-2.5 rounded-lg hover:bg-dark-card transition-all text-sm">
-                                <i class="ri-group-line text-accent"></i> All Users
+                            <a href="/owners/analytics" class="flex items-center gap-2 px-4 py-2.5 rounded-lg hover:bg-dark-card transition-all text-sm">
+                                <i class="ri-line-chart-line text-accent"></i> Analytics
+                            </a>
+                            <a href="/owners/inventory" class="flex items-center gap-2 px-4 py-2.5 rounded-lg hover:bg-dark-card transition-all text-sm">
+                                <i class="ri-archive-line text-accent"></i> Inventory
                             </a>
                             <a href="/owners/orders" class="flex items-center gap-2 px-4 py-2.5 rounded-lg hover:bg-dark-card transition-all text-sm">
-                                <i class="ri-file-list-3-line text-accent"></i> All Orders
+                                <i class="ri-file-list-3-line text-accent"></i> Orders
+                            </a>
+                            <a href="/owners/users" class="flex items-center gap-2 px-4 py-2.5 rounded-lg hover:bg-dark-card transition-all text-sm">
+                                <i class="ri-group-line text-accent"></i> Customers
+                            </a>
+                            <div class="border-t border-dark-border my-2"></div>
+                            <a href="/owners/coupons" class="flex items-center gap-2 px-4 py-2.5 rounded-lg hover:bg-dark-card transition-all text-sm">
+                                <i class="ri-coupon-line text-accent"></i> Coupons
+                            </a>
+                            <a href="/owners/flash-sale" class="flex items-center gap-2 px-4 py-2.5 rounded-lg hover:bg-dark-card transition-all text-sm">
+                                <i class="ri-flashlight-line text-orange-400"></i> Flash Sale
                             </a>
                             <div class="border-t border-dark-border my-2"></div>
                             <a href="/owners/logout" class="flex items-center gap-2 px-4 py-2.5 rounded-lg hover:bg-red-500/10 transition-all text-sm text-red-400">

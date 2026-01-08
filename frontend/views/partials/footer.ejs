@@ -24,6 +24,25 @@
 
     <!-- Page Load Animation Script -->
     <script>
+        // Theme Toggle Function
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            
+            // Add animation effect
+            const toggleBtns = document.querySelectorAll('.theme-toggle');
+            toggleBtns.forEach(btn => {
+                btn.style.transform = 'scale(0.9)';
+                setTimeout(() => {
+                    btn.style.transform = 'scale(1)';
+                }, 150);
+            });
+        }
+
         // GSAP Animations
         gsap.registerPlugin(ScrollTrigger);
 

@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics Dashboard - Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-100">
+    <%- include('partials/admin-header') %>
+    
+    <div class="max-w-7xl mx-auto px-4 py-8">
+        <div class="flex justify-between items-center mb-8">
+            <h1 class="text-3xl font-bold text-gray-800">Analytics Dashboard</h1>
+            <select id="periodSelect" class="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                <option value="7">Last 7 days</option>
+                <option value="30" selected>Last 30 days</option>
+                <option value="90">Last 90 days</option>
+                <option value="365">Last year</option>
+            </select>
+        </div>
+        
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-xl shadow-sm p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-500">Total Revenue</p>
+                        <p class="text-2xl font-bold text-gray-800" id="totalRevenue">₹0</p>
+                    </div>
+                    <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                        <i class="ri-money-rupee-circle-line text-2xl text-green-600"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-xl shadow-sm p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-500">Total Orders</p>
+                        <p class="text-2xl font-bold text-gray-800" id="totalOrders">0</p>
+                    </div>
+                    <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                        <i class="ri-shopping-bag-line text-2xl text-blue-600"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-xl shadow-sm p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-500">Avg Order Value</p>
+                        <p class="text-2xl font-bold text-gray-800" id="avgOrderValue">₹0</p>
+                    </div>
+                    <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
+                        <i class="ri-line-chart-line text-2xl text-purple-600"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-xl shadow-sm p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-500">New Customers</p>
+                        <p class="text-2xl font-bold text-gray-800" id="newCustomers">0</p>
+                    </div>
+                    <div class="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center">
+                        <i class="ri-user-add-line text-2xl text-yellow-600"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Charts Row -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <!-- Revenue Chart -->
+            <div class="bg-white rounded-xl shadow-sm p-6">
+                <h3 class="text-lg font-semibold mb-4">Revenue Trend</h3>
+                <canvas id="revenueChart" height="250"></canvas>
+            </div>
+            
+            <!-- Orders by Status -->
+            <div class="bg-white rounded-xl shadow-sm p-6">
+                <h3 class="text-lg font-semibold mb-4">Orders by Status</h3>
+                <canvas id="orderStatusChart" height="250"></canvas>
+            </div>
+        </div>
+        
+        <!-- Top Products & Category Revenue -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Top Products -->
+            <div class="bg-white rounded-xl shadow-sm p-6">
+                <h3 class="text-lg font-semibold mb-4">Top Selling Products</h3>
+                <div id="topProductsList" class="space-y-3">
+                    <p class="text-gray-500 text-center py-4">Loading...</p>
+                </div>
+            </div>
+            
+            <!-- Revenue by Category -->
+            <div class="bg-white rounded-xl shadow-sm p-6">
+                <h3 class="text-lg font-semibold mb-4">Revenue by Category</h3>
+                <canvas id="categoryChart" height="250"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let revenueChart, orderStatusChart, categoryChart;
+        
+        async function loadAnalytics() {
+            const period = document.getElementById('periodSelect').value;
+            
+            try {
+                const res = await fetch(`/owners/api/analytics?period=${period}`);
+                const data = await res.json();
+                
+                if (data.success) {
+                    updateStats(data.analytics);
+                    updateCharts(data.analytics);
+                    updateTopProducts(data.analytics.topProducts);
+                }
+            } catch (err) {
+                console.error('Error loading analytics:', err);
+            }
+        }
+        
+        function updateStats(analytics) {
+            document.getElementById('totalRevenue').textContent = `₹${analytics.totalRevenue.toLocaleString()}`;
+            document.getElementById('totalOrders').textContent = analytics.totalOrders;
+            document.getElementById('avgOrderValue').textContent = `₹${analytics.avgOrderValue}`;
+            document.getElementById('newCustomers').textContent = analytics.newCustomers;
+        }
+        
+        function updateCharts(analytics) {
+            // Revenue Chart
+            const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+            if (revenueChart) revenueChart.destroy();
+            
+            revenueChart = new Chart(revenueCtx, {
+                type: 'line',
+                data: {
+                    labels: analytics.dailyRevenue.map(d => d._id),
+                    datasets: [{
+                        label: 'Revenue',
+                        data: analytics.dailyRevenue.map(d => d.revenue),
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+            
+            // Order Status Chart
+            const statusCtx = document.getElementById('orderStatusChart').getContext('2d');
+            if (orderStatusChart) orderStatusChart.destroy();
+            
+            const statusColors = {
+                pending: '#f59e0b',
+                confirmed: '#3b82f6',
+                processing: '#8b5cf6',
+                shipped: '#06b6d4',
+                delivered: '#10b981',
+                cancelled: '#ef4444'
+            };
+            
+            orderStatusChart = new Chart(statusCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: analytics.ordersByStatus.map(s => s._id),
+                    datasets: [{
+                        data: analytics.ordersByStatus.map(s => s.count),
+                        backgroundColor: analytics.ordersByStatus.map(s => statusColors[s._id] || '#94a3b8')
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+            
+            // Category Chart
+            const catCtx = document.getElementById('categoryChart').getContext('2d');
+            if (categoryChart) categoryChart.destroy();
+            
+            categoryChart = new Chart(catCtx, {
+                type: 'bar',
+                data: {
+                    labels: analytics.revenueByCategory.map(c => c._id || 'Uncategorized'),
+                    datasets: [{
+                        label: 'Revenue',
+                        data: analytics.revenueByCategory.map(c => c.revenue),
+                        backgroundColor: '#3b82f6'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+        }
+        
+        function updateTopProducts(products) {
+            const container = document.getElementById('topProductsList');
+            
+            if (!products.length) {
+                container.innerHTML = '<p class="text-gray-500 text-center py-4">No sales data yet</p>';
+                return;
+            }
+            
+            container.innerHTML = products.map((p, i) => `
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div class="flex items-center gap-3">
+                        <span class="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-medium">${i + 1}</span>
+                        <span class="font-medium">${p._id}</span>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-medium">₹${p.revenue.toLocaleString()}</p>
+                        <p class="text-sm text-gray-500">${p.totalSold} sold</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        document.getElementById('periodSelect').addEventListener('change', loadAnalytics);
+        loadAnalytics();
+    </script>
+</body>
+</html>

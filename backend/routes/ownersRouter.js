@@ -377,7 +377,8 @@ router.post("/product/create", isOwnerLoggedIn, upload.single("image"), async fu
         let {
             name, price, discount, bgcolor, panelcolor, textcolor, description, features,
             inStock, stockQuantity, freeShipping, freeShippingMinOrder,
-            deliveryDays, expressDeliveryDays, returnDays, warrantyYears
+            deliveryDays, expressDeliveryDays, returnDays, warrantyYears,
+            category, sizes, colors, tags
         } = req.body;
 
         // Parse features from textarea (one per line)
@@ -385,6 +386,11 @@ router.post("/product/create", isOwnerLoggedIn, upload.single("image"), async fu
         if (features && features.trim()) {
             featuresArray = features.split('\n').map(f => f.trim()).filter(f => f.length > 0);
         }
+
+        // Parse sizes and colors
+        let sizesArray = sizes ? sizes.split(',').map(s => s.trim()).filter(s => s) : [];
+        let colorsArray = colors ? colors.split(',').map(c => c.trim()).filter(c => c) : [];
+        let tagsArray = tags ? tags.split(',').map(t => t.trim()).filter(t => t) : [];
 
         let product = await productModel.create({
             image: req.file.buffer,
@@ -403,12 +409,478 @@ router.post("/product/create", isOwnerLoggedIn, upload.single("image"), async fu
             deliveryDays: deliveryDays || '5-7',
             expressDeliveryDays: expressDeliveryDays || '2-3',
             returnDays: returnDays || 30,
-            warrantyYears: warrantyYears || 1
+            warrantyYears: warrantyYears || 1,
+            category: category || 'uncategorized',
+            sizes: sizesArray,
+            colors: colorsArray,
+            tags: tagsArray
         });
         req.flash("success", "Product created successfully");
         res.redirect("/owners/admin");
     } catch (err) {
         res.send(err.message);
+    }
+});
+
+// Edit product page
+router.get("/product/edit/:id", isOwnerLoggedIn, async function (req, res) {
+    try {
+        let product = await productModel.findById(req.params.id);
+        if (!product) {
+            req.flash("error", "Product not found");
+            return res.redirect("/owners/admin");
+        }
+        res.render("edit-product", { product });
+    } catch (err) {
+        req.flash("error", "Error loading product");
+        res.redirect("/owners/admin");
+    }
+});
+
+// Update product
+router.post("/product/edit/:id", isOwnerLoggedIn, upload.single("image"), async function (req, res) {
+    try {
+        let updateData = { ...req.body };
+
+        // Handle checkboxes
+        updateData.inStock = req.body.inStock === 'on';
+        updateData.freeShipping = req.body.freeShipping === 'on';
+        updateData.isFlashSale = req.body.isFlashSale === 'on';
+
+        // Parse arrays
+        if (updateData.features) {
+            updateData.features = updateData.features.split('\n').map(f => f.trim()).filter(f => f);
+        }
+        if (updateData.sizes) {
+            updateData.sizes = updateData.sizes.split(',').map(s => s.trim()).filter(s => s);
+        }
+        if (updateData.colors) {
+            updateData.colors = updateData.colors.split(',').map(c => c.trim()).filter(c => c);
+        }
+        if (updateData.tags) {
+            updateData.tags = updateData.tags.split(',').map(t => t.trim()).filter(t => t);
+        }
+
+        // If new image uploaded
+        if (req.file) {
+            updateData.image = req.file.buffer;
+        }
+
+        await productModel.findByIdAndUpdate(req.params.id, updateData);
+        req.flash("success", "Product updated successfully");
+        res.redirect("/owners/admin");
+    } catch (err) {
+        req.flash("error", "Error updating product");
+        res.redirect("/owners/admin");
+    }
+});
+
+// Delete product
+router.post("/product/delete/:id", isOwnerLoggedIn, async function (req, res) {
+    try {
+        await productModel.findByIdAndDelete(req.params.id);
+        req.flash("success", "Product deleted successfully");
+        res.redirect("/owners/admin");
+    } catch (err) {
+        req.flash("error", "Error deleting product");
+        res.redirect("/owners/admin");
+    }
+});
+
+// ==================== ADMIN ANALYTICS & DASHBOARD ====================
+
+// Dashboard analytics API
+router.get("/api/analytics", isOwnerLoggedIn, async function (req, res) {
+    try {
+        const { period = '30' } = req.query;
+        const days = parseInt(period);
+        const startDate = new Date();
+        startDate.setDate(startDate.getDate() - days);
+
+        // Total revenue
+        const revenueData = await orderModel.aggregate([
+            { $match: { createdAt: { $gte: startDate }, orderStatus: { $ne: 'cancelled' } } },
+            { $group: { _id: null, total: { $sum: '$finalAmount' }, count: { $sum: 1 } } }
+        ]);
+
+        // Daily revenue for chart
+        const dailyRevenue = await orderModel.aggregate([
+            { $match: { createdAt: { $gte: startDate }, orderStatus: { $ne: 'cancelled' } } },
+            {
+                $group: {
+                    _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
+                    revenue: { $sum: '$finalAmount' },
+                    orders: { $sum: 1 }
+                }
+            },
+            { $sort: { _id: 1 } }
+        ]);
+
+        // Order status breakdown
+        const ordersByStatus = await orderModel.aggregate([
+            { $match: { createdAt: { $gte: startDate } } },
+            { $group: { _id: '$orderStatus', count: { $sum: 1 } } }
+        ]);
+
+        // Top selling products
+        const topProducts = await orderModel.aggregate([
+            { $match: { createdAt: { $gte: startDate }, orderStatus: { $ne: 'cancelled' } } },
+            { $unwind: '$products' },
+            {
+                $group: {
+                    _id: '$products.name',
+                    totalSold: { $sum: 1 },
+                    revenue: { $sum: '$products.price' }
+                }
+            },
+            { $sort: { totalSold: -1 } },
+            { $limit: 10 }
+        ]);
+
+        // New customers
+        const newCustomers = await userModel.countDocuments({
+            createdAt: { $gte: startDate }
+        });
+
+        // Total customers
+        const totalCustomers = await userModel.countDocuments();
+
+        // Average order value
+        const avgOrderValue = revenueData[0]
+            ? (revenueData[0].total / revenueData[0].count).toFixed(2)
+            : 0;
+
+        // Revenue by category
+        const revenueByCategory = await orderModel.aggregate([
+            { $match: { createdAt: { $gte: startDate }, orderStatus: { $ne: 'cancelled' } } },
+            { $unwind: '$products' },
+            {
+                $group: {
+                    _id: '$products.category',
+                    revenue: { $sum: '$products.price' },
+                    count: { $sum: 1 }
+                }
+            },
+            { $sort: { revenue: -1 } }
+        ]);
+
+        res.json({
+            success: true,
+            analytics: {
+                totalRevenue: revenueData[0]?.total || 0,
+                totalOrders: revenueData[0]?.count || 0,
+                avgOrderValue,
+                newCustomers,
+                totalCustomers,
+                dailyRevenue,
+                ordersByStatus,
+                topProducts,
+                revenueByCategory
+            }
+        });
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+// Analytics dashboard page
+router.get("/analytics", isOwnerLoggedIn, async function (req, res) {
+    res.render("admin-analytics");
+});
+
+// ==================== INVENTORY MANAGEMENT ====================
+
+// Inventory overview
+router.get("/inventory", isOwnerLoggedIn, async function (req, res) {
+    try {
+        let products = await productModel.find()
+            .select('name stockQuantity inStock price category soldCount')
+            .sort({ stockQuantity: 1 });
+
+        // Get low stock products (less than 10)
+        let lowStockProducts = products.filter(p => p.stockQuantity < 10);
+
+        res.render("admin-inventory", { products, lowStockProducts });
+    } catch (err) {
+        res.render("admin-inventory", { products: [], lowStockProducts: [] });
+    }
+});
+
+// Update stock quantity
+router.post("/inventory/update/:id", isOwnerLoggedIn, async function (req, res) {
+    try {
+        let { stockQuantity, inStock } = req.body;
+        await productModel.findByIdAndUpdate(req.params.id, {
+            stockQuantity: parseInt(stockQuantity),
+            inStock: inStock === 'on' || inStock === true
+        });
+
+        if (req.xhr || req.headers['content-type']?.includes('application/json')) {
+            return res.json({ success: true, message: 'Stock updated' });
+        }
+        req.flash("success", "Stock updated successfully");
+        res.redirect("/owners/inventory");
+    } catch (err) {
+        if (req.xhr) {
+            return res.status(500).json({ success: false, error: err.message });
+        }
+        req.flash("error", "Error updating stock");
+        res.redirect("/owners/inventory");
+    }
+});
+
+// Bulk stock update
+router.post("/inventory/bulk-update", isOwnerLoggedIn, async function (req, res) {
+    try {
+        let { updates } = req.body; // Array of { productId, stockQuantity }
+
+        for (let update of updates) {
+            await productModel.findByIdAndUpdate(update.productId, {
+                stockQuantity: update.stockQuantity,
+                inStock: update.stockQuantity > 0
+            });
+        }
+
+        res.json({ success: true, message: 'Bulk update completed' });
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+// Low stock alerts API
+router.get("/api/low-stock", isOwnerLoggedIn, async function (req, res) {
+    try {
+        let { threshold = 10 } = req.query;
+        let lowStockProducts = await productModel.find({
+            stockQuantity: { $lt: parseInt(threshold) }
+        }).select('name stockQuantity price category');
+
+        res.json({ success: true, products: lowStockProducts });
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+// ==================== CUSTOMER MANAGEMENT ====================
+
+// Get single user details
+router.get("/user/:id", isOwnerLoggedIn, async function (req, res) {
+    try {
+        let user = await userModel.findById(req.params.id)
+            .select("-password")
+            .populate('wishlist', 'name price');
+
+        let orders = await orderModel.find({ user: req.params.id })
+            .sort({ createdAt: -1 });
+
+        // Calculate customer statistics
+        let totalSpent = orders.reduce((sum, order) => {
+            if (order.orderStatus !== 'cancelled') {
+                return sum + order.finalAmount;
+            }
+            return sum;
+        }, 0);
+
+        res.render("admin-user-detail", {
+            user,
+            orders,
+            stats: {
+                totalOrders: orders.length,
+                totalSpent,
+                cancelledOrders: orders.filter(o => o.orderStatus === 'cancelled').length
+            }
+        });
+    } catch (err) {
+        res.redirect("/owners/users");
+    }
+});
+
+// Block/Unblock user
+router.post("/user/:id/block", isOwnerLoggedIn, async function (req, res) {
+    try {
+        let user = await userModel.findById(req.params.id);
+        user.isBlocked = !user.isBlocked;
+        await user.save();
+
+        if (req.xhr) {
+            return res.json({ success: true, isBlocked: user.isBlocked });
+        }
+        req.flash("success", `User ${user.isBlocked ? 'blocked' : 'unblocked'} successfully`);
+        res.redirect("/owners/users");
+    } catch (err) {
+        if (req.xhr) {
+            return res.status(500).json({ success: false, error: err.message });
+        }
+        res.redirect("/owners/users");
+    }
+});
+
+// Search users
+router.get("/api/users/search", isOwnerLoggedIn, async function (req, res) {
+    try {
+        let { q } = req.query;
+        let users = await userModel.find({
+            $or: [
+                { fullname: { $regex: q, $options: 'i' } },
+                { email: { $regex: q, $options: 'i' } }
+            ]
+        }).select("-password").limit(20);
+
+        res.json({ success: true, users });
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+// ==================== ORDERS EXPORT ====================
+
+// Export orders as CSV
+router.get("/orders/export", isOwnerLoggedIn, async function (req, res) {
+    try {
+        let { startDate, endDate, status } = req.query;
+        let query = {};
+
+        if (startDate && endDate) {
+            query.createdAt = {
+                $gte: new Date(startDate),
+                $lte: new Date(endDate)
+            };
+        }
+
+        if (status && status !== 'all') {
+            query.orderStatus = status;
+        }
+
+        let orders = await orderModel.find(query)
+            .populate('user', 'fullname email')
+            .sort({ createdAt: -1 })
+            .lean();
+
+        // Create CSV content
+        let csv = 'Order ID,Date,Customer,Email,Products,Total,Status,Payment Method,Payment Status\n';
+
+        orders.forEach(order => {
+            let products = order.products.map(p => p.name).join('; ');
+            let date = new Date(order.createdAt).toISOString().split('T')[0];
+            csv += `"${order.orderId}","${date}","${order.user?.fullname || order.shippingAddress.fullname}","${order.user?.email || 'N/A'}","${products}","${order.finalAmount}","${order.orderStatus}","${order.paymentMethod}","${order.paymentStatus}"\n`;
+        });
+
+        res.setHeader('Content-Type', 'text/csv');
+        res.setHeader('Content-Disposition', 'attachment; filename=orders-export.csv');
+        res.send(csv);
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+// ==================== FLASH SALE MANAGEMENT ====================
+
+// Flash sale page
+router.get("/flash-sale", isOwnerLoggedIn, async function (req, res) {
+    try {
+        let flashSaleProducts = await productModel.find({ isFlashSale: true });
+        let allProducts = await productModel.find({ isFlashSale: { $ne: true } });
+        res.render("admin-flash-sale", { flashSaleProducts, allProducts });
+    } catch (err) {
+        res.render("admin-flash-sale", { flashSaleProducts: [], allProducts: [] });
+    }
+});
+
+// Add product to flash sale
+router.post("/flash-sale/add", isOwnerLoggedIn, async function (req, res) {
+    try {
+        let { productId, flashSalePrice, endTime } = req.body;
+
+        await productModel.findByIdAndUpdate(productId, {
+            isFlashSale: true,
+            flashSalePrice: parseInt(flashSalePrice),
+            flashSaleEndTime: new Date(endTime)
+        });
+
+        res.json({ success: true, message: 'Product added to flash sale' });
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+// Remove from flash sale
+router.post("/flash-sale/remove/:id", isOwnerLoggedIn, async function (req, res) {
+    try {
+        await productModel.findByIdAndUpdate(req.params.id, {
+            isFlashSale: false,
+            flashSalePrice: null,
+            flashSaleEndTime: null
+        });
+
+        res.json({ success: true, message: 'Product removed from flash sale' });
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+// ==================== COUPON MANAGEMENT ====================
+
+const couponModel = require("../models/coupon-model");
+
+// Coupon management page
+router.get("/coupons", isOwnerLoggedIn, async function (req, res) {
+    try {
+        let coupons = await couponModel.find().sort({ createdAt: -1 });
+        res.render("admin-coupons", { coupons });
+    } catch (err) {
+        res.render("admin-coupons", { coupons: [] });
+    }
+});
+
+// Create coupon
+router.post("/coupon/create", isOwnerLoggedIn, async function (req, res) {
+    try {
+        let {
+            code, discountType, discountValue, minimumOrderAmount,
+            maxDiscountAmount, expiryDate, usageLimit
+        } = req.body;
+
+        // Check if code already exists
+        let existing = await couponModel.findOne({ code: code.toUpperCase() });
+        if (existing) {
+            return res.status(400).json({ success: false, error: 'Coupon code already exists' });
+        }
+
+        let coupon = await couponModel.create({
+            code: code.toUpperCase(),
+            discountType,
+            discountValue: parseInt(discountValue),
+            minimumOrderAmount: parseInt(minimumOrderAmount) || 0,
+            maxDiscountAmount: parseInt(maxDiscountAmount) || null,
+            expiryDate: new Date(expiryDate),
+            usageLimit: parseInt(usageLimit) || null
+        });
+
+        res.json({ success: true, coupon });
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+// Delete coupon
+router.post("/coupon/delete/:id", isOwnerLoggedIn, async function (req, res) {
+    try {
+        await couponModel.findByIdAndDelete(req.params.id);
+        res.json({ success: true, message: 'Coupon deleted' });
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+// Toggle coupon active status
+router.post("/coupon/toggle/:id", isOwnerLoggedIn, async function (req, res) {
+    try {
+        let coupon = await couponModel.findById(req.params.id);
+        coupon.isActive = !coupon.isActive;
+        await coupon.save();
+        res.json({ success: true, isActive: coupon.isActive });
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
     }
 });
 

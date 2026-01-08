@@ -4,6 +4,8 @@ const isLoggedIn = require("../middlewares/isLoggedIn");
 const userModel = require("../models/user-model");
 const productModel = require("../models/product-model");
 const orderModel = require("../models/order-model");
+const couponModel = require("../models/coupon-model");
+const bcrypt = require("bcrypt");
 const {
     registerUser,
     loginUser,
@@ -334,10 +336,297 @@ router.get("/orders/:orderId", isLoggedIn, async function (req, res) {
 // User wishlist
 router.get("/wishlist", isLoggedIn, async function (req, res) {
     try {
-        // For now, wishlist is empty - can be extended later
-        res.render("wishlist", { wishlist: [] });
+        let user = await userModel.findOne({ email: req.user.email }).populate("wishlist");
+        res.render("wishlist", { wishlist: user.wishlist || [] });
     } catch (err) {
         res.send(err.message);
+    }
+});
+
+// Add to wishlist
+router.get("/wishlist/add/:productId", isLoggedIn, async function (req, res) {
+    try {
+        let user = await userModel.findOne({ email: req.user.email });
+        if (!user.wishlist.includes(req.params.productId)) {
+            user.wishlist.push(req.params.productId);
+            await user.save();
+        }
+        res.redirect("back");
+    } catch (err) {
+        res.redirect("/shop");
+    }
+});
+
+// Remove from wishlist
+router.get("/wishlist/remove/:productId", isLoggedIn, async function (req, res) {
+    try {
+        let user = await userModel.findOne({ email: req.user.email });
+        user.wishlist = user.wishlist.filter(id => id.toString() !== req.params.productId);
+        await user.save();
+        res.redirect("/users/wishlist");
+    } catch (err) {
+        res.redirect("/users/wishlist");
+    }
+});
+
+// Move from wishlist to cart
+router.get("/wishlist/move-to-cart/:productId", isLoggedIn, async function (req, res) {
+    try {
+        let user = await userModel.findOne({ email: req.user.email });
+        user.wishlist = user.wishlist.filter(id => id.toString() !== req.params.productId);
+        if (!user.cart.includes(req.params.productId)) {
+            user.cart.push(req.params.productId);
+        }
+        await user.save();
+        res.redirect("/users/cart");
+    } catch (err) {
+        res.redirect("/users/wishlist");
+    }
+});
+
+// ============ PROFILE & SETTINGS ============
+
+// Update profile
+router.post("/profile/update", isLoggedIn, async function (req, res) {
+    try {
+        let user = await userModel.findOne({ email: req.user.email });
+        user.fullname = req.body.fullname || user.fullname;
+        user.contact = req.body.contact || user.contact;
+        await user.save();
+        req.flash("success", "Profile updated successfully");
+        res.redirect("/users/profile");
+    } catch (err) {
+        req.flash("error", err.message);
+        res.redirect("/users/profile");
+    }
+});
+
+// Change password
+router.post("/profile/change-password", isLoggedIn, async function (req, res) {
+    try {
+        let user = await userModel.findOne({ email: req.user.email });
+        const { currentPassword, newPassword, confirmPassword } = req.body;
+
+        const isMatch = await bcrypt.compare(currentPassword, user.password);
+        if (!isMatch) {
+            req.flash("error", "Current password is incorrect");
+            return res.redirect("/users/profile");
+        }
+
+        if (newPassword !== confirmPassword) {
+            req.flash("error", "New passwords do not match");
+            return res.redirect("/users/profile");
+        }
+
+        if (newPassword.length < 6) {
+            req.flash("error", "Password must be at least 6 characters");
+            return res.redirect("/users/profile");
+        }
+
+        const salt = await bcrypt.genSalt(10);
+        user.password = await bcrypt.hash(newPassword, salt);
+        await user.save();
+
+        req.flash("success", "Password changed successfully");
+        res.redirect("/users/profile");
+    } catch (err) {
+        req.flash("error", err.message);
+        res.redirect("/users/profile");
+    }
+});
+
+// ============ ADDRESSES ============
+
+// Get addresses
+router.get("/addresses", isLoggedIn, async function (req, res) {
+    try {
+        let user = await userModel.findOne({ email: req.user.email });
+        res.render("addresses", { addresses: user.addresses || [] });
+    } catch (err) {
+        res.send(err.message);
+    }
+});
+
+// Add address
+router.post("/addresses/add", isLoggedIn, async function (req, res) {
+    try {
+        let user = await userModel.findOne({ email: req.user.email });
+        const newAddress = {
+            fullname: req.body.fullname,
+            phone: req.body.phone,
+            address: req.body.address,
+            city: req.body.city,
+            state: req.body.state,
+            pincode: req.body.pincode,
+            isDefault: user.addresses.length === 0
+        };
+        user.addresses.push(newAddress);
+        await user.save();
+        res.redirect(req.body.redirect || "/users/addresses");
+    } catch (err) {
+        res.redirect("/users/addresses");
+    }
+});
+
+// Set default address
+router.get("/addresses/default/:addressId", isLoggedIn, async function (req, res) {
+    try {
+        let user = await userModel.findOne({ email: req.user.email });
+        user.addresses.forEach(addr => {
+            addr.isDefault = addr._id.toString() === req.params.addressId;
+        });
+        await user.save();
+        res.redirect("/users/addresses");
+    } catch (err) {
+        res.redirect("/users/addresses");
+    }
+});
+
+// Delete address
+router.get("/addresses/delete/:addressId", isLoggedIn, async function (req, res) {
+    try {
+        let user = await userModel.findOne({ email: req.user.email });
+        user.addresses = user.addresses.filter(addr => addr._id.toString() !== req.params.addressId);
+        await user.save();
+        res.redirect("/users/addresses");
+    } catch (err) {
+        res.redirect("/users/addresses");
+    }
+});
+
+// ============ ORDER ACTIONS ============
+
+// Cancel order
+router.post("/orders/:orderId/cancel", isLoggedIn, async function (req, res) {
+    try {
+        let user = await userModel.findOne({ email: req.user.email });
+        let order = await orderModel.findOne({ _id: req.params.orderId, user: user._id });
+
+        if (!order) {
+            return res.status(404).json({ success: false, message: "Order not found" });
+        }
+
+        // Can only cancel if order is pending or confirmed
+        if (!['pending', 'confirmed'].includes(order.orderStatus)) {
+            return res.status(400).json({ success: false, message: "Cannot cancel this order" });
+        }
+
+        order.orderStatus = 'cancelled';
+        order.updatedAt = Date.now();
+        await order.save();
+
+        res.json({ success: true, message: "Order cancelled successfully" });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// ============ COUPONS ============
+
+// Apply coupon
+router.post("/apply-coupon", isLoggedIn, async function (req, res) {
+    try {
+        let user = await userModel.findOne({ email: req.user.email });
+        const { code, orderAmount } = req.body;
+
+        const coupon = await couponModel.findOne({ code: code.toUpperCase() });
+        if (!coupon) {
+            return res.json({ success: false, message: "Invalid coupon code" });
+        }
+
+        const validation = coupon.isValid(user._id, orderAmount);
+        if (!validation.valid) {
+            return res.json({ success: false, message: validation.message });
+        }
+
+        const discount = coupon.calculateDiscount(orderAmount);
+
+        res.json({
+            success: true,
+            discount: discount,
+            discountType: coupon.discountType,
+            discountValue: coupon.discountValue,
+            message: `Coupon applied! You save ₹${discount}`
+        });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// ============ REVIEWS ============
+
+// Add review
+router.post("/products/:productId/review", isLoggedIn, async function (req, res) {
+    try {
+        let user = await userModel.findOne({ email: req.user.email });
+        let product = await productModel.findById(req.params.productId);
+
+        if (!product) {
+            return res.status(404).json({ success: false, message: "Product not found" });
+        }
+
+        // Check if user already reviewed
+        const existingReview = product.reviews.find(r => r.user.toString() === user._id.toString());
+        if (existingReview) {
+            return res.status(400).json({ success: false, message: "You have already reviewed this product" });
+        }
+
+        product.reviews.push({
+            user: user._id,
+            rating: parseInt(req.body.rating),
+            title: req.body.title,
+            comment: req.body.comment
+        });
+
+        product.calculateAverageRating();
+        await product.save();
+
+        res.json({ success: true, message: "Review added successfully" });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// ============ RECENTLY VIEWED ============
+
+// Track recently viewed (called from product detail page)
+router.post("/track-view/:productId", isLoggedIn, async function (req, res) {
+    try {
+        let user = await userModel.findOne({ email: req.user.email });
+
+        // Remove if already exists
+        user.recentlyViewed = user.recentlyViewed.filter(
+            item => item.product.toString() !== req.params.productId
+        );
+
+        // Add to beginning
+        user.recentlyViewed.unshift({
+            product: req.params.productId,
+            viewedAt: Date.now()
+        });
+
+        // Keep only last 20
+        user.recentlyViewed = user.recentlyViewed.slice(0, 20);
+
+        await user.save();
+
+        // Also update product view count
+        await productModel.findByIdAndUpdate(req.params.productId, { $inc: { viewCount: 1 } });
+
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ success: false });
+    }
+});
+
+// Get recently viewed
+router.get("/recently-viewed", isLoggedIn, async function (req, res) {
+    try {
+        let user = await userModel.findOne({ email: req.user.email })
+            .populate("recentlyViewed.product");
+        res.json({ success: true, products: user.recentlyViewed });
+    } catch (err) {
+        res.status(500).json({ success: false, products: [] });
     }
 });
 

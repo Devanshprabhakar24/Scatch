@@ -141,11 +141,46 @@
                                 <i class="ri-shopping-bag-line"></i>
                                 Add to Cart
                             </a>
-                            <button class="magnetic-btn flex-1 py-4 rounded-xl bg-dark-card border border-dark-border text-white font-semibold text-lg hover:border-accent transition-all duration-300 flex items-center justify-center gap-2">
+                            <% if (typeof isInWishlist !== 'undefined' && isInWishlist) { %>
+                            <a href="/users/wishlist/remove/<%= product._id %>" class="magnetic-btn flex-1 py-4 rounded-xl bg-pink-500/20 border border-pink-500/50 text-pink-400 font-semibold text-lg hover:bg-pink-500 hover:text-white transition-all duration-300 flex items-center justify-center gap-2">
+                                <i class="ri-heart-fill"></i>
+                                In Wishlist
+                            </a>
+                            <% } else { %>
+                            <a href="/users/wishlist/add/<%= product._id %>" class="magnetic-btn flex-1 py-4 rounded-xl bg-dark-card border border-dark-border text-white font-semibold text-lg hover:border-accent transition-all duration-300 flex items-center justify-center gap-2">
                                 <i class="ri-heart-line"></i>
                                 Add to Wishlist
-                            </button>
+                            </a>
+                            <% } %>
                         </div>
+
+                        <!-- Size Selection (if available) -->
+                        <% if (product.sizes && product.sizes.length > 0) { %>
+                        <div class="mt-8">
+                            <span class="text-gray-400 block mb-3">Size:</span>
+                            <div class="flex flex-wrap gap-3">
+                                <% product.sizes.forEach((size, i) => { %>
+                                <button class="size-btn px-4 py-2 rounded-xl bg-dark-card border border-dark-border hover:border-accent transition-all <%= i === 0 ? 'border-accent' : '' %>">
+                                    <%= size %>
+                                </button>
+                                <% }) %>
+                            </div>
+                        </div>
+                        <% } %>
+
+                        <!-- Color Selection (if available) -->
+                        <% if (product.colors && product.colors.length > 0) { %>
+                        <div class="mt-6">
+                            <span class="text-gray-400 block mb-3">Color:</span>
+                            <div class="flex flex-wrap gap-3">
+                                <% product.colors.forEach((color, i) => { %>
+                                <button class="color-btn w-10 h-10 rounded-full border-2 <%= i === 0 ? 'border-accent' : 'border-dark-border' %> hover:border-accent transition-all" 
+                                    style="background-color: <%= color %>" title="<%= color %>">
+                                </button>
+                                <% }) %>
+                            </div>
+                        </div>
+                        <% } %>
                     </div>
                 </div>
             </div>
@@ -154,7 +189,7 @@
             <div class="mt-20">
                 <div class="flex gap-8 border-b border-dark-border mb-8">
                     <button class="tab-btn active pb-4 text-lg font-medium border-b-2 border-accent text-white" data-tab="description">Description</button>
-                    <button class="tab-btn pb-4 text-lg font-medium border-b-2 border-transparent text-gray-500 hover:text-white transition-colors" data-tab="reviews">Reviews (128)</button>
+                    <button class="tab-btn pb-4 text-lg font-medium border-b-2 border-transparent text-gray-500 hover:text-white transition-colors" data-tab="reviews">Reviews (<%= product.reviews ? product.reviews.length : 0 %>)</button>
                     <button class="tab-btn pb-4 text-lg font-medium border-b-2 border-transparent text-gray-500 hover:text-white transition-colors" data-tab="shipping">Shipping Info</button>
                 </div>
 
@@ -174,62 +209,76 @@
                             </li>
                             <% }); %>
                         </ul>
+                        
+                        <% if (product.category) { %>
+                        <div class="mt-6 pt-6 border-t border-dark-border">
+                            <span class="text-gray-500 text-sm">Category:</span>
+                            <a href="/shop?category=<%= product.category %>" class="text-accent hover:text-accent-light capitalize ml-2"><%= product.category %></a>
+                        </div>
+                        <% } %>
+                        
+                        <% if (product.tags && product.tags.length > 0) { %>
+                        <div class="mt-4 flex flex-wrap gap-2">
+                            <% product.tags.forEach(tag => { %>
+                            <a href="/search?q=<%= tag %>" class="px-3 py-1 rounded-full bg-dark-card text-gray-400 text-sm hover:text-accent transition-colors">#<%= tag %></a>
+                            <% }) %>
+                        </div>
+                        <% } %>
                     </div>
                 </div>
 
                 <!-- Reviews Tab -->
                 <div class="tab-content hidden" id="reviews">
                     <div class="glass rounded-2xl p-8">
-                        <div class="flex items-center justify-between mb-8">
-                            <h3 class="text-xl font-semibold">Customer Reviews</h3>
-                            <button class="magnetic-btn px-6 py-3 rounded-xl bg-accent text-white font-medium hover:shadow-lg hover:shadow-accent/25 transition-all">
+                        <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-8">
+                            <div>
+                                <h3 class="text-xl font-semibold">Customer Reviews</h3>
+                                <% if (product.averageRating) { %>
+                                <div class="flex items-center gap-2 mt-2">
+                                    <div class="flex text-yellow-400">
+                                        <% for (let i = 1; i <= 5; i++) { %>
+                                        <i class="ri-star-<%= i <= Math.round(product.averageRating) ? 'fill' : 'line' %>"></i>
+                                        <% } %>
+                                    </div>
+                                    <span class="text-gray-400"><%= product.averageRating.toFixed(1) %> out of 5 (<%= product.reviews?.length || 0 %> reviews)</span>
+                                </div>
+                                <% } %>
+                            </div>
+                            <button onclick="openReviewModal()" class="magnetic-btn px-6 py-3 rounded-xl bg-accent text-white font-medium hover:shadow-lg hover:shadow-accent/25 transition-all">
                                 Write a Review
                             </button>
                         </div>
-                        <!-- Sample Reviews -->
+                        
+                        <!-- Reviews List -->
                         <div class="space-y-6">
+                            <% if (product.reviews && product.reviews.length > 0) { %>
+                            <% product.reviews.forEach(review => { %>
                             <div class="border-b border-dark-border pb-6">
                                 <div class="flex items-center gap-4 mb-3">
                                     <div class="w-12 h-12 rounded-full bg-gradient-to-br from-accent to-purple-500 flex items-center justify-center font-bold">
-                                        A
+                                        <%= review.user?.fullname?.charAt(0) || 'U' %>
                                     </div>
                                     <div>
-                                        <h4 class="font-medium">Aditya Sharma</h4>
+                                        <h4 class="font-medium"><%= review.user?.fullname || 'Anonymous' %></h4>
                                         <div class="flex items-center gap-2 text-sm text-gray-500">
                                             <div class="flex text-yellow-400">
-                                                <i class="ri-star-fill"></i>
-                                                <i class="ri-star-fill"></i>
-                                                <i class="ri-star-fill"></i>
-                                                <i class="ri-star-fill"></i>
-                                                <i class="ri-star-fill"></i>
+                                                <% for (let i = 1; i <= 5; i++) { %>
+                                                <i class="ri-star-<%= i <= review.rating ? 'fill' : 'line' %>"></i>
+                                                <% } %>
                                             </div>
-                                            <span>• 2 weeks ago</span>
+                                            <span>• <%= new Date(review.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) %></span>
                                         </div>
                                     </div>
                                 </div>
-                                <p class="text-gray-400">Amazing quality! Exceeded my expectations. The material feels premium and the design is exactly as shown. Highly recommend!</p>
+                                <p class="text-gray-400"><%= review.comment %></p>
                             </div>
-                            <div class="border-b border-dark-border pb-6">
-                                <div class="flex items-center gap-4 mb-3">
-                                    <div class="w-12 h-12 rounded-full bg-gradient-to-br from-pink-500 to-orange-400 flex items-center justify-center font-bold">
-                                        P
-                                    </div>
-                                    <div>
-                                        <h4 class="font-medium">Priya Patel</h4>
-                                        <div class="flex items-center gap-2 text-sm text-gray-500">
-                                            <div class="flex text-yellow-400">
-                                                <i class="ri-star-fill"></i>
-                                                <i class="ri-star-fill"></i>
-                                                <i class="ri-star-fill"></i>
-                                                <i class="ri-star-fill"></i>
-                                                <i class="ri-star-line"></i>
-                                            </div>
-                                            <span>• 1 month ago</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <p class="text-gray-400">Great product for the price. Fast delivery and excellent packaging. Would buy again!</p>
+                            <% }) %>
+                            <% } else { %>
+                            <div class="text-center py-8 text-gray-500">
+                                <i class="ri-chat-3-line text-4xl mb-3 block"></i>
+                                <p>No reviews yet. Be the first to review this product!</p>
                             </div>
+                            <% } %>
                         </div>
                     </div>
                 </div>
@@ -289,6 +338,64 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Related Products -->
+            <% if (typeof relatedProducts !== 'undefined' && relatedProducts && relatedProducts.length > 0) { %>
+            <div class="mt-20">
+                <h2 class="text-2xl font-bold mb-8">Related Products</h2>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                    <% relatedProducts.forEach(prod => { %>
+                    <a href="/product/<%= prod._id %>" class="glass rounded-2xl overflow-hidden card-hover group">
+                        <div class="h-40 flex items-center justify-center" style="background: <%= prod.bgcolor %>;">
+                            <% if (prod.image) { %>
+                            <img src="data:image/jpeg;base64,<%= prod.image.toString('base64') %>" alt="<%= prod.name %>" class="h-32 object-contain group-hover:scale-110 transition-transform">
+                            <% } %>
+                        </div>
+                        <div class="p-4" style="background: <%= prod.panelcolor %>; color: <%= prod.textcolor %>;">
+                            <h3 class="font-medium truncate"><%= prod.name %></h3>
+                            <p class="font-bold">₹<%= prod.price - (prod.price * prod.discount / 100) %></p>
+                        </div>
+                    </a>
+                    <% }) %>
+                </div>
+            </div>
+            <% } %>
+        </div>
+    </div>
+
+    <!-- Write Review Modal -->
+    <div id="reviewModal" class="fixed inset-0 bg-black/50 flex items-center justify-center hidden z-50">
+        <div class="glass rounded-2xl p-6 w-full max-w-md mx-4">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-bold">Write a Review</h2>
+                <button onclick="closeReviewModal()" class="p-2 hover:bg-dark-card rounded-full">
+                    <i class="ri-close-line text-xl"></i>
+                </button>
+            </div>
+            
+            <form action="/users/review/<%= product._id %>" method="POST" class="space-y-4">
+                <div>
+                    <label class="text-sm text-gray-500 block mb-2">Rating</label>
+                    <div class="flex gap-2" id="ratingStars">
+                        <% for (let i = 1; i <= 5; i++) { %>
+                        <button type="button" onclick="setRating(<%= i %>)" class="text-3xl text-gray-600 hover:text-yellow-400 transition-colors rating-star">
+                            <i class="ri-star-line"></i>
+                        </button>
+                        <% } %>
+                    </div>
+                    <input type="hidden" name="rating" id="ratingInput" value="5" required>
+                </div>
+                
+                <div>
+                    <label class="text-sm text-gray-500 block mb-2">Your Review</label>
+                    <textarea name="comment" rows="4" required minlength="10" placeholder="Share your experience with this product..."
+                        class="w-full bg-dark-card border border-dark-border rounded-xl px-4 py-3 text-white focus:border-accent outline-none resize-none"></textarea>
+                </div>
+                
+                <button type="submit" class="w-full py-3 rounded-xl bg-gradient-to-r from-accent to-purple-500 text-white font-medium">
+                    Submit Review
+                </button>
+            </form>
         </div>
     </div>
 
@@ -326,6 +433,52 @@
                 document.querySelector('.qty-value').textContent = qty;
             });
         });
+
+        // Size selection
+        document.querySelectorAll('.size-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('border-accent'));
+                btn.classList.add('border-accent');
+            });
+        });
+
+        // Color selection
+        document.querySelectorAll('.color-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('border-accent'));
+                btn.classList.add('border-accent');
+            });
+        });
+
+        // Review modal
+        function openReviewModal() {
+            document.getElementById('reviewModal').classList.remove('hidden');
+        }
+
+        function closeReviewModal() {
+            document.getElementById('reviewModal').classList.add('hidden');
+        }
+
+        function setRating(rating) {
+            document.getElementById('ratingInput').value = rating;
+            document.querySelectorAll('.rating-star').forEach((star, i) => {
+                const icon = star.querySelector('i');
+                if (i < rating) {
+                    icon.classList.remove('ri-star-line');
+                    icon.classList.add('ri-star-fill');
+                    star.classList.add('text-yellow-400');
+                    star.classList.remove('text-gray-600');
+                } else {
+                    icon.classList.remove('ri-star-fill');
+                    icon.classList.add('ri-star-line');
+                    star.classList.remove('text-yellow-400');
+                    star.classList.add('text-gray-600');
+                }
+            });
+        }
+        
+        // Set initial rating
+        setRating(5);
     </script>
 
 <%- include('./partials/footer') %>

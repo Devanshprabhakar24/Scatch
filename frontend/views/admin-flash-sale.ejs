@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flash Sale Management - Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+    <%- include('partials/admin-header') %>
+    
+    <div class="max-w-7xl mx-auto px-4 py-8">
+        <div class="flex justify-between items-center mb-8">
+            <h1 class="text-3xl font-bold text-gray-800">Flash Sale Management</h1>
+            <button onclick="openAddModal()" class="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600">
+                <i class="ri-flashlight-line mr-2"></i>Add to Flash Sale
+            </button>
+        </div>
+        
+        <!-- Active Flash Sale Products -->
+        <div class="bg-white rounded-xl shadow-sm p-6 mb-8">
+            <h2 class="text-xl font-bold mb-4">Active Flash Sale Products</h2>
+            
+            <% if (flashSaleProducts.length === 0) { %>
+            <div class="text-center py-12 text-gray-500">
+                <i class="ri-flashlight-line text-4xl mb-2"></i>
+                <p>No products in flash sale. Add products to start a flash sale!</p>
+            </div>
+            <% } else { %>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <% flashSaleProducts.forEach(product => { %>
+                <div class="border rounded-xl p-4">
+                    <div class="flex items-start gap-4">
+                        <% if (product.image) { %>
+                        <img src="data:image/jpeg;base64,<%= product.image.toString('base64') %>" 
+                            alt="<%= product.name %>" class="w-20 h-20 object-cover rounded-lg">
+                        <% } else { %>
+                        <div class="w-20 h-20 bg-gray-100 rounded-lg flex items-center justify-center">
+                            <i class="ri-image-line text-2xl text-gray-400"></i>
+                        </div>
+                        <% } %>
+                        <div class="flex-1">
+                            <h3 class="font-semibold"><%= product.name %></h3>
+                            <div class="flex items-center gap-2 mt-1">
+                                <span class="text-orange-500 font-bold">₹<%= product.flashSalePrice %></span>
+                                <span class="text-gray-400 line-through text-sm">₹<%= product.price %></span>
+                                <span class="text-green-500 text-sm">
+                                    <%= Math.round((1 - product.flashSalePrice / product.price) * 100) %>% OFF
+                                </span>
+                            </div>
+                            <% if (product.flashSaleEndTime) { %>
+                            <p class="text-xs text-gray-500 mt-1">
+                                Ends: <%= new Date(product.flashSaleEndTime).toLocaleString() %>
+                            </p>
+                            <% } %>
+                        </div>
+                    </div>
+                    <div class="mt-4 flex justify-end">
+                        <button onclick="removeFromFlashSale('<%= product._id %>')" 
+                            class="px-3 py-1 text-red-500 hover:bg-red-50 rounded-lg text-sm">
+                            <i class="ri-close-line mr-1"></i>Remove
+                        </button>
+                    </div>
+                </div>
+                <% }) %>
+            </div>
+            <% } %>
+        </div>
+    </div>
+    
+    <!-- Add to Flash Sale Modal -->
+    <div id="addModal" class="fixed inset-0 bg-black/50 flex items-center justify-center hidden z-50">
+        <div class="bg-white rounded-xl p-6 w-full max-w-md mx-4">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-bold">Add Product to Flash Sale</h2>
+                <button onclick="closeAddModal()" class="p-2 hover:bg-gray-100 rounded-full">
+                    <i class="ri-close-line text-xl"></i>
+                </button>
+            </div>
+            
+            <form id="addForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Select Product</label>
+                    <select name="productId" required class="w-full px-4 py-2 border rounded-lg">
+                        <option value="">Choose a product...</option>
+                        <% allProducts.forEach(product => { %>
+                        <option value="<%= product._id %>" data-price="<%= product.price %>">
+                            <%= product.name %> (₹<%= product.price %>)
+                        </option>
+                        <% }) %>
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Flash Sale Price (₹)</label>
+                    <input type="number" name="flashSalePrice" required min="1"
+                        class="w-full px-4 py-2 border rounded-lg" placeholder="Enter discounted price">
+                    <p id="discountPreview" class="text-sm text-green-500 mt-1 hidden"></p>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">End Date & Time</label>
+                    <input type="datetime-local" name="endTime" required
+                        class="w-full px-4 py-2 border rounded-lg">
+                </div>
+                
+                <button type="submit" class="w-full py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 font-medium">
+                    <i class="ri-flashlight-line mr-2"></i>Add to Flash Sale
+                </button>
+            </form>
+        </div>
+    </div>
+    
+    <script>
+        function openAddModal() {
+            document.getElementById('addModal').classList.remove('hidden');
+            // Set min datetime to now
+            const now = new Date();
+            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+            document.querySelector('input[name="endTime"]').min = now.toISOString().slice(0, 16);
+        }
+        
+        function closeAddModal() {
+            document.getElementById('addModal').classList.add('hidden');
+            document.getElementById('addForm').reset();
+            document.getElementById('discountPreview').classList.add('hidden');
+        }
+        
+        // Show discount preview
+        const productSelect = document.querySelector('select[name="productId"]');
+        const priceInput = document.querySelector('input[name="flashSalePrice"]');
+        const discountPreview = document.getElementById('discountPreview');
+        
+        function updateDiscountPreview() {
+            const selectedOption = productSelect.options[productSelect.selectedIndex];
+            const originalPrice = selectedOption.dataset.price;
+            const salePrice = priceInput.value;
+            
+            if (originalPrice && salePrice && salePrice < originalPrice) {
+                const discount = Math.round((1 - salePrice / originalPrice) * 100);
+                discountPreview.textContent = `${discount}% discount from original price`;
+                discountPreview.classList.remove('hidden');
+            } else {
+                discountPreview.classList.add('hidden');
+            }
+        }
+        
+        productSelect.addEventListener('change', updateDiscountPreview);
+        priceInput.addEventListener('input', updateDiscountPreview);
+        
+        document.getElementById('addForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData);
+            
+            try {
+                const res = await fetch('/owners/flash-sale/add', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await res.json();
+                if (result.success) {
+                    location.reload();
+                } else {
+                    alert(result.error || 'Error adding product to flash sale');
+                }
+            } catch (err) {
+                alert('Error adding product to flash sale');
+            }
+        });
+        
+        async function removeFromFlashSale(productId) {
+            if (!confirm('Remove this product from flash sale?')) return;
+            
+            try {
+                const res = await fetch(`/owners/flash-sale/remove/${productId}`, { method: 'POST' });
+                const data = await res.json();
+                if (data.success) {
+                    location.reload();
+                }
+            } catch (err) {
+                alert('Error removing product from flash sale');
+            }
+        }
+    </script>
+</body>
+</html>

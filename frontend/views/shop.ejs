@@ -32,12 +32,20 @@
                             <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2">
                                 <i class="ri-sort-desc"></i> Sort By
                             </h3>
-                            <form action="/shop" method="GET">
+                            <form id="filterForm" action="/shop" method="GET">
+                                <!-- Hidden inputs to preserve filters -->
+                                <% if (filters && filters.category) { %><input type="hidden" name="category" value="<%= filters.category %>"><% } %>
+                                <% if (filters && filters.minPrice) { %><input type="hidden" name="minPrice" value="<%= filters.minPrice %>"><% } %>
+                                <% if (filters && filters.maxPrice) { %><input type="hidden" name="maxPrice" value="<%= filters.maxPrice %>"><% } %>
+                                <% if (filters && filters.rating) { %><input type="hidden" name="rating" value="<%= filters.rating %>"><% } %>
+                                
                                 <select class="w-full bg-dark-card border border-dark-border rounded-xl px-4 py-3 text-white focus:border-accent focus:ring-1 focus:ring-accent outline-none transition-all cursor-pointer" name="sortby" onchange="this.form.submit()">
                                     <option value="popular" <%= sortby === 'popular' ? 'selected' : '' %>>🔥 Popular</option>
                                     <option value="newest" <%= sortby === 'newest' ? 'selected' : '' %>>✨ Newest</option>
                                     <option value="lowprice" <%= sortby === 'lowprice' ? 'selected' : '' %>>💰 Price: Low to High</option>
                                     <option value="highprice" <%= sortby === 'highprice' ? 'selected' : '' %>>💎 Price: High to Low</option>
+                                    <option value="rating" <%= sortby === 'rating' ? 'selected' : '' %>>⭐ Top Rated</option>
+                                    <option value="bestselling" <%= sortby === 'bestselling' ? 'selected' : '' %>>📈 Best Selling</option>
                                 </select>
                             </form>
                         </div>
@@ -47,48 +55,85 @@
                             <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2">
                                 <i class="ri-folder-line"></i> Categories
                             </h3>
-                            <div class="space-y-2">
-                                <a href="/shop" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-dark-card transition-all group">
+                            <div class="space-y-2 max-h-60 overflow-y-auto">
+                                <a href="/shop?sortby=<%= sortby %>" class="flex items-center gap-3 px-4 py-3 rounded-xl <%= !filters?.category ? 'bg-dark-card' : 'hover:bg-dark-card' %> transition-all group">
                                     <div class="w-8 h-8 rounded-lg bg-accent/20 flex items-center justify-center">
                                         <i class="ri-apps-line text-accent"></i>
                                     </div>
-                                    <span class="text-gray-300 group-hover:text-white transition-colors">All Products</span>
+                                    <span class="<%= !filters?.category ? 'text-white' : 'text-gray-300' %> group-hover:text-white transition-colors">All Products</span>
                                 </a>
-                                <a href="/shop?filter=discounted" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-dark-card transition-all group">
+                                <% if (typeof categories !== 'undefined' && categories.length > 0) { %>
+                                <% categories.forEach(cat => { %>
+                                <a href="/shop?category=<%= cat %>&sortby=<%= sortby %>" class="flex items-center gap-3 px-4 py-3 rounded-xl <%= filters?.category === cat ? 'bg-dark-card' : 'hover:bg-dark-card' %> transition-all group">
+                                    <div class="w-8 h-8 rounded-lg bg-purple-500/20 flex items-center justify-center">
+                                        <i class="ri-price-tag-3-line text-purple-400"></i>
+                                    </div>
+                                    <span class="<%= filters?.category === cat ? 'text-white' : 'text-gray-300' %> group-hover:text-white transition-colors capitalize"><%= cat %></span>
+                                </a>
+                                <% }) %>
+                                <% } %>
+                                <a href="/shop?filter=discounted&sortby=<%= sortby %>" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-dark-card transition-all group">
                                     <div class="w-8 h-8 rounded-lg bg-pink-500/20 flex items-center justify-center">
                                         <i class="ri-percent-line text-pink-400"></i>
                                     </div>
                                     <span class="text-gray-300 group-hover:text-white transition-colors">On Sale</span>
                                 </a>
+                                <a href="/flash-sale" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-dark-card transition-all group">
+                                    <div class="w-8 h-8 rounded-lg bg-orange-500/20 flex items-center justify-center animate-pulse">
+                                        <i class="ri-flashlight-line text-orange-400"></i>
+                                    </div>
+                                    <span class="text-gray-300 group-hover:text-white transition-colors">Flash Sale</span>
+                                </a>
                             </div>
                         </div>
 
-                        <!-- Filters -->
-                        <div>
+                        <!-- Price Range -->
+                        <div class="mb-8">
                             <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2">
-                                <i class="ri-filter-3-line"></i> Filters
+                                <i class="ri-money-rupee-circle-line"></i> Price Range
+                            </h3>
+                            <form action="/shop" method="GET" class="space-y-3">
+                                <input type="hidden" name="sortby" value="<%= sortby %>">
+                                <% if (filters && filters.category) { %><input type="hidden" name="category" value="<%= filters.category %>"><% } %>
+                                <div class="flex gap-2">
+                                    <input type="number" name="minPrice" placeholder="Min" value="<%= filters?.minPrice || '' %>" 
+                                        class="w-1/2 bg-dark-card border border-dark-border rounded-lg px-3 py-2 text-white text-sm">
+                                    <input type="number" name="maxPrice" placeholder="Max" value="<%= filters?.maxPrice || '' %>" 
+                                        class="w-1/2 bg-dark-card border border-dark-border rounded-lg px-3 py-2 text-white text-sm">
+                                </div>
+                                <button type="submit" class="w-full py-2 bg-accent/20 text-accent rounded-lg hover:bg-accent/30 transition-all text-sm font-medium">
+                                    Apply Price Filter
+                                </button>
+                            </form>
+                        </div>
+
+                        <!-- Rating Filter -->
+                        <div class="mb-8">
+                            <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+                                <i class="ri-star-line"></i> Rating
                             </h3>
                             <div class="space-y-2">
-                                <a href="/shop?filter=instock" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-dark-card transition-all group">
-                                    <div class="w-8 h-8 rounded-lg bg-green-500/20 flex items-center justify-center">
-                                        <i class="ri-checkbox-circle-line text-green-400"></i>
+                                <% for (let r = 4; r >= 1; r--) { %>
+                                <a href="/shop?rating=<%= r %>&sortby=<%= sortby %><%= filters?.category ? '&category=' + filters.category : '' %>" 
+                                    class="flex items-center gap-2 px-4 py-2 rounded-lg <%= parseInt(filters?.rating) === r ? 'bg-dark-card' : 'hover:bg-dark-card' %> transition-all">
+                                    <div class="flex">
+                                        <% for (let s = 1; s <= 5; s++) { %>
+                                        <i class="ri-star-<%= s <= r ? 'fill text-yellow-400' : 'line text-gray-600' %> text-sm"></i>
+                                        <% } %>
                                     </div>
-                                    <span class="text-gray-300 group-hover:text-white transition-colors">In Stock</span>
+                                    <span class="text-gray-400 text-sm">& up</span>
                                 </a>
-                                <a href="/shop?filter=discounted" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-dark-card transition-all group">
-                                    <div class="w-8 h-8 rounded-lg bg-orange-500/20 flex items-center justify-center">
-                                        <i class="ri-price-tag-3-line text-orange-400"></i>
-                                    </div>
-                                    <span class="text-gray-300 group-hover:text-white transition-colors">Has Discount</span>
-                                </a>
-                                <a href="/shop" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-red-500/10 transition-all group mt-4">
-                                    <div class="w-8 h-8 rounded-lg bg-red-500/20 flex items-center justify-center">
-                                        <i class="ri-close-line text-red-400"></i>
-                                    </div>
-                                    <span class="text-red-400 group-hover:text-red-300 transition-colors">Clear Filters</span>
-                                </a>
+                                <% } %>
                             </div>
                         </div>
+
+                        <!-- Clear Filters -->
+                        <a href="/shop" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-red-500/10 transition-all group">
+                            <div class="w-8 h-8 rounded-lg bg-red-500/20 flex items-center justify-center">
+                                <i class="ri-close-line text-red-400"></i>
+                            </div>
+                            <span class="text-red-400 group-hover:text-red-300 transition-colors">Clear All Filters</span>
+                        </a>
                     </div>
                 </aside>
 

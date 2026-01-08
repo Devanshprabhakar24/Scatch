@@ -1,0 +1,105 @@
+<%- include('./partials/header') %>
+
+    <!-- Flash Sale Section -->
+    <div class="relative z-10 min-h-screen pt-28 pb-12 px-6">
+        <div class="max-w-7xl mx-auto">
+            <!-- Page Header -->
+            <div class="text-center mb-12 hero-content">
+                <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-orange-500/20 text-orange-400 mb-4">
+                    <i class="ri-flashlight-fill animate-pulse"></i>
+                    <span class="font-medium">Limited Time Offer</span>
+                </div>
+                <h1 class="text-4xl md:text-5xl font-space font-bold mb-4">
+                    ⚡ <span class="gradient-text">Flash Sale</span>
+                </h1>
+                <p class="text-gray-400 max-w-xl mx-auto">Grab these amazing deals before they're gone!</p>
+            </div>
+
+            <% if (products && products.length > 0) { %>
+            <!-- Products Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <% products.forEach(function(product){ %>
+                <div class="group">
+                    <div class="glass rounded-2xl overflow-hidden card-hover relative">
+                        <!-- Flash Sale Badge -->
+                        <div class="absolute top-4 left-4 z-20 flex flex-col gap-2">
+                            <span class="px-3 py-1.5 rounded-full bg-gradient-to-r from-orange-500 to-red-500 text-white text-xs font-bold shadow-lg animate-pulse">
+                                ⚡ FLASH SALE
+                            </span>
+                            <% if (product.flashSalePrice && product.price > product.flashSalePrice) { %>
+                            <span class="px-3 py-1.5 rounded-full bg-green-500 text-white text-xs font-bold">
+                                <%= Math.round((1 - product.flashSalePrice / product.price) * 100) %>% OFF
+                            </span>
+                            <% } %>
+                        </div>
+                        
+                        <!-- Product Image -->
+                        <a href="/product/<%= product._id %>" class="block relative h-56 flex items-center justify-center overflow-hidden" style="background: <%= product.bgcolor %>;">
+                            <% if(product.image) { %>
+                            <img class="h-44 object-contain transform group-hover:scale-110 transition-transform duration-500" 
+                                 src="data:image/jpeg;base64,<%= product.image.toString('base64') %>" 
+                                 alt="<%= product.name %>">
+                            <% } %>
+                            <!-- Quick Actions Overlay -->
+                            <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-3">
+                                <span class="magnetic-btn px-5 py-2.5 rounded-full bg-white text-black font-semibold transform -translate-y-4 group-hover:translate-y-0 transition-all duration-300 flex items-center gap-2 text-sm">
+                                    <i class="ri-eye-line"></i>
+                                    View
+                                </span>
+                            </div>
+                        </a>
+                        
+                        <!-- Product Info -->
+                        <div class="p-5" style="background: <%= product.panelcolor %>;">
+                            <a href="/product/<%= product._id %>" class="font-semibold text-lg mb-2 block hover:opacity-80 transition-opacity" style="color: <%= product.textcolor %>;"><%= product.name %></a>
+                            
+                            <!-- Timer -->
+                            <% if (product.flashSaleEndTime) { %>
+                            <div class="mb-3 text-xs text-gray-400">
+                                <i class="ri-time-line"></i> Ends: <%= new Date(product.flashSaleEndTime).toLocaleString() %>
+                            </div>
+                            <% } %>
+                            
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-xl font-bold text-orange-400">₹<%= product.flashSalePrice || product.price %></span>
+                                    <% if(product.flashSalePrice && product.price > product.flashSalePrice) { %>
+                                    <span class="line-through text-sm opacity-50" style="color: <%= product.textcolor %>;">₹<%= product.price %></span>
+                                    <% } %>
+                                </div>
+                                <a href="/users/cart/add/<%= product._id %>" class="w-10 h-10 rounded-full bg-orange-500 hover:bg-orange-600 text-white flex items-center justify-center transition-all duration-300">
+                                    <i class="ri-add-line text-xl"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <% }) %>
+            </div>
+            <% } else { %>
+            <!-- Empty State -->
+            <div class="flex flex-col items-center justify-center py-20">
+                <div class="w-32 h-32 rounded-full bg-dark-card flex items-center justify-center mb-6">
+                    <i class="ri-flashlight-line text-5xl text-gray-600"></i>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-400 mb-2">No active flash sales</h3>
+                <p class="text-gray-500 mb-6">Check back later for exciting deals!</p>
+                <a href="/shop" class="magnetic-btn px-6 py-3 rounded-full bg-gradient-to-r from-accent to-purple-500 text-white font-medium hover:shadow-lg hover:shadow-accent/25 transition-all duration-300">
+                    Browse All Products
+                </a>
+            </div>
+            <% } %>
+        </div>
+    </div>
+
+    <script>
+        gsap.from('.hero-content', {
+            y: 40,
+            opacity: 0,
+            duration: 1,
+            ease: 'power3.out',
+            delay: 0.2
+        });
+    </script>
+
+<%- include('./partials/footer') %>
